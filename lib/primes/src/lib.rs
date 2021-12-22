@@ -4,10 +4,7 @@ mod tests {
 
     #[test]
     fn is_prime_works() {
- 
-        println!("#");
         let seive = Seive::new(10);
-        println!("{:?}", seive);
         assert_eq!(seive.is_prime(2), true);
         assert_eq!(seive.is_prime(3), true);
         assert_eq!(seive.is_prime(37), true);
@@ -20,7 +17,6 @@ mod tests {
     }
 }
 
-#[derive(Debug)]
 struct Seive {
     primality: Vec<bool>,
     limit: u64
@@ -68,7 +64,6 @@ impl Seive {
 
         //get an iterator of primes
         let primes = self.primes();
-        println!("primes: {:?}", primes);
 
         //look for a prime factor of n
         for p in primes.take_while(|p| *p <= sqrt_n+1) {
@@ -78,7 +73,6 @@ impl Seive {
     }
 }
 
-#[derive(Debug)]
 struct SeivePrimes<'a> {
     seive: &'a Seive,
     next: u64
@@ -97,7 +91,7 @@ impl <'a>Iterator for SeivePrimes<'a> {
         println!("self.next: {}", self.next);
         for i in self.next..self.seive.limit+1 {
             if self.seive.primality[i as usize] {
-                self.next = i;
+                self.next = i+1;
                 return Some(i);
             }
         }
