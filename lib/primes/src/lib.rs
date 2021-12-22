@@ -3,71 +3,109 @@ mod tests {
     use super::*;
 
     #[test]
-    fn seive_works() {
-        let table = seive(100);
-        assert_eq!(table[2], true);
-        assert_eq!(table[3], true);
-        assert_eq!(table[4], false);
-        assert_eq!(table[5], true);
-        assert_eq!(table[6], false);
-        assert_eq!(table[7], true);
-        assert_eq!(table[8], false);
-        assert_eq!(table[9], false);
+    fn is_prime_works() {
+ 
+        println!("#");
+        let seive = Seive::new(10);
+        println!("{:?}", seive);
+        assert_eq!(seive.is_prime(2), true);
+        assert_eq!(seive.is_prime(3), true);
+        assert_eq!(seive.is_prime(37), true);
+        assert_eq!(seive.is_prime(64), false);
+        assert_eq!(seive.is_prime(89), true);
     }
     #[test]
-    fn is_prime_works() {
-        let primes = primes(seive(1_000_000));
-        assert_eq!(is_prime(&primes,9791), true);
-        assert_eq!(is_prime(&primes,6971), true);
-        assert_eq!(is_prime(&primes,6973), false);
-        assert_eq!(is_prime(&primes,2), true);
-        assert_eq!(is_prime(&primes,6), false);
-
+    fn primes_works() {
+        //..
     }
+}
 
+#[derive(Debug)]
+struct Seive {
+    primality: Vec<bool>,
+    limit: u64
 }
 
 //classic Seive of Erasthemes algorithm
 //return table of primality for numbers up to to n 
-//this would be better as an object that has methods like is_prime() and prime_iter()
+impl Seive {
+    pub fn new(limit: u64) -> Seive {
+        let mut primality = vec![true; limit as usize + 1];
+        
+        primality[0] = false;
+        primality[1] = false;
 
-pub fn seive(n: u64) -> Vec<bool> {
-    let mut a = vec![true; n as usize + 1];
-    
-    a[0] = false;
-    a[1] = false;
-
-    //flag non-primes 
-    for i in 2..=isqrt(n) {
-        if a[i as usize] {
-            for j in (i*i..).step_by(i as usize).take_while(|x| x <= &n) {
-                a[j as usize] = false; 
+        //flag non-primes 
+        for i in 2..=isqrt(limit) {
+            if primality[i as usize] {
+                for j in (i*i..).step_by(i as usize).take_while(|x| x <= &limit) {
+                    primality[j as usize] = false; 
+                }
             }
         }
+        
+        return Seive{primality, limit};
     }
-    
-    return a;
-}
 
-pub fn primes(a: Vec<bool>) -> Vec<u64> {
-    let mut primes: Vec<u64> = Vec::new();
-    //gather the primes
-    for i in 2..a.len() {
-        if a[i] {
-            primes.push(i as u64);
+    pub fn primes(&self) -> SeivePrimes {
+        SeivePrimes::new(self)
+    }
+
+    //returns true if n is a prime
+    //panics if n > limit^2
+    pub fn is_prime(&self, n:u64) -> bool {
+        //lookup values of n that are covered by the seive
+        if n <= self.limit {
+            return self.primality[n as usize];
         }
+
+        //other values need to be tested
+        //fail is n > limit^2
+        let sqrt_n = isqrt(n);
+        if sqrt_n > self.limit {
+            panic!("testing n={} is out of range of seive with limit={}", n, self.limit);
+        }
+
+        //get an iterator of primes
+        let primes = self.primes();
+        println!("primes: {:?}", primes);
+
+        //look for a prime factor of n
+        for p in primes.take_while(|p| *p <= sqrt_n+1) {
+            if n % p == 0 { return false; }
+        }
+        return true;    
     }
-    
-    return primes;
 }
 
-pub fn is_prime(primes: &Vec<u64>, n: u64) -> bool {
-    let sqrt_n = isqrt(n);
-    for p in primes.iter().take_while(|p| **p <= sqrt_n+1) {
-        if n % p == 0 { return false; }
+#[derive(Debug)]
+struct SeivePrimes<'a> {
+    seive: &'a Seive,
+    next: u64
+}
+
+impl <'a> SeivePrimes<'a> {
+    pub fn new (seive: &Seive) -> SeivePrimes {
+        SeivePrimes { seive, next:2}
     }
-    return true;
-} 
+}
+
+impl <'a>Iterator for SeivePrimes<'a> {
+    type Item = u64;
+
+    fn next(&mut self) -> Option<u64> {
+        println!("self.next: {}", self.next);
+        for i in self.next..self.seive.limit+1 {
+            if self.seive.primality[i as usize] {
+                self.next = i;
+                return Some(i);
+            }
+        }
+
+        self.next = self.seive.limit+1;
+        return None;
+    }
+}
 
 //simple integer square root
 fn isqrt(n: u64) -> u64 {
