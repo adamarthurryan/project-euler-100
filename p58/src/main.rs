@@ -3,7 +3,7 @@ use primes;
 fn main() {
     println!("Problem 58: Spiral Primes");
 
-    let primes = primes::primes(primes::seive(1_000_000));
+    let seive = primes::Seive::new(1_000_000);
 
     let mut num_prime = 0f64;
     let mut num_total = 1f64;
@@ -11,7 +11,7 @@ fn main() {
     for n in 1..1_000_000_000_000 {
         let a = diags(n);
         for ai in a {
-            if primes::is_prime(&primes, ai) {
+            if seive.is_prime(ai) {
                 num_prime += 1f64;
             }
             num_total += 1f64;

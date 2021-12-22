@@ -17,14 +17,14 @@ mod tests {
     }
 }
 
-struct Seive {
+pub struct Seive {
     primality: Vec<bool>,
     limit: u64
 }
 
 //classic Seive of Erasthemes algorithm
 //return table of primality for numbers up to to n 
-pub impl Seive {
+impl Seive {
     pub fn new(limit: u64) -> Seive {
         let mut primality = vec![true; limit as usize + 1];
         
@@ -73,7 +73,7 @@ pub impl Seive {
     }
 }
 
-struct SeivePrimes<'a> {
+pub struct SeivePrimes<'a> {
     seive: &'a Seive,
     next: u64
 }
@@ -88,7 +88,6 @@ impl <'a>Iterator for SeivePrimes<'a> {
     type Item = u64;
 
     fn next(&mut self) -> Option<u64> {
-        println!("self.next: {}", self.next);
         for i in self.next..self.seive.limit+1 {
             if self.seive.primality[i as usize] {
                 self.next = i+1;

@@ -6,7 +6,7 @@ use digits;
 //this algo is not very efficient
 //it works fine for four digit numbers, but takes several seconds on five digit numbers
 fn main() {
-    let is_prime = primes::seive(9999);
+    let seive = primes::Seive::new(9999);
 
     let mut options = Vec::new();
 
@@ -17,7 +17,7 @@ fn main() {
         let mut a_primes: Vec<u64> = a.into_iter()
             .map(|ai| digits::from_digits(&ai))
             .filter(|&ai| ai >= 1000)
-            .filter(|&ai| is_prime[ai as usize])
+            .filter(|&ai| seive.is_prime(ai))
             .unique()
             .collect();
 
