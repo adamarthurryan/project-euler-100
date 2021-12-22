@@ -6,7 +6,7 @@ mod tests {
     fn is_prime_works() {
  
         println!("#");
-        let seive = Seive::new(10);
+         let seive = Seive::new(10);
         println!("{:?}", seive);
         assert_eq!(seive.is_prime(2), true);
         assert_eq!(seive.is_prime(3), true);
