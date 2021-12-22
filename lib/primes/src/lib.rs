@@ -24,7 +24,7 @@ struct Seive {
 
 //classic Seive of Erasthemes algorithm
 //return table of primality for numbers up to to n 
-impl Seive {
+pub impl Seive {
     pub fn new(limit: u64) -> Seive {
         let mut primality = vec![true; limit as usize + 1];
         
