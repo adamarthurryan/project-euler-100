@@ -6,7 +6,9 @@ represents the lowest sum for a set of four primes with this property.
 Find the lowest sum for a set of five primes for which any two primes concatenate 
 to produce another prime.*/
 
-use primes;
+//use primes;
+use primal;
+use std::collections::{HashMap, HashSet};
 
 #[cfg(test)]
 mod tests {
@@ -17,33 +19,143 @@ mod tests {
         assert_eq!(concatenate(55,68), 5568);
         assert_eq!(concatenate(3, 123091), 3123091);
         assert_eq!(concatenate(213,8), 2138);
+        assert_eq!(solution(), Option(26033));
     }
 }
 
 
+
 fn main() {
+    let Option(solution) = solve();
+    println!("Solution: {}", solution);
 
-    let seive = primes::Seive::new(1_000);
-    let primes: Vec<u64> = seive.primes().collect();
+}
 
-    //test all pairs in primes?
-    //then look for overlaps
+fn solve () -> Option(usize) {
+    let sieve = primal::Sieve::new(100_000_000);
+    let primes: Vec<u64> = sieve.primes_from(3).take_while(|&p| p<10_000).map(|p| p as u64).collect();
 
     //find all pairs of primes
     let pairs: Vec<_> = Pairs::new(&primes).collect();
 
+
     //filter for both composites are prime
-    let pairs: Vec<_> = pairs.into_iter().filter(|(&a,&b)| seive.is_prime(concatenate(a,b)) && seive.is_prime(concatenate(b,a))).collect();
+    let pairs: Vec<_> = pairs.into_iter().filter(|(&a,&b)| sieve.is_prime(concatenate(a,b) as usize) && sieve.is_prime(concatenate(b,a) as usize)).collect();
     
+
     //now we are in graph theory
-    //the pairs are edges, we need to also build a set of vertices (the primes)
-    println!("{:?}", pairs);
+    //build a graph representation with a hashmap of vertex neighbors
+    let mut neighbors: HashSet<(u64,u64)> = HashSet::new();
+    let mut vertices: HashSet<u64> = HashSet::new();
 
-    todo!("filter for both composites are prime");
 
-    //find groups...
-    unimplemented!();
+    for (a,b) in pairs {
+        //add the edge to the neighbours map both ways
+        for (u,v) in [(a,b),(b,a)] {
+            neighbors.insert((*u,*v));
+            vertices.insert(*u);
+        }
+    }
 
+    let mut vertices: Vec<u64> = vertices.into_iter().collect();
+    vertices.sort();
+
+//    //drop any vertices that don't have at least 5 neighbors
+//    vertices = vertices.into_iter().filter(|v| neighbors.get(&v).unwrap().len()>=5).collect();
+    
+    //println!("{:?}", pairs);
+//    println!("{:?}", neighbors);
+//    println!("{:?}", vertices);
+
+
+    //todo: "Refactor back to bron_kerbosch algorithm?"
+
+    //find a k-clique
+    let clique = find_k_clique(5, &vertices, &neighbors);
+    if let Some(clique) = clique {
+        println!("5-clique found: {:?}", clique);
+    }
+    else {
+        println!("no 5-clique found");
+    }
+
+    return clique.product();
+}
+
+
+
+//this could maybe run better without hashsets
+//eg sorted iterators or something?
+fn find_k_clique(k: usize, vertices: &Vec<u64>, neighbors: &HashSet<(u64, u64)>) -> Option<Vec<u64>> {
+    k_clique_inner(k, 0, &Vec::new(), vertices, neighbors)
+}
+
+//another try for a k-clique algorithm
+//maybe more efficient
+//this should start from pairs, not just individual items, right?
+fn k_clique_inner(k:usize, pivot:usize, clique: &Vec<u64>, vertices: &Vec<u64>, neighbors: &HashSet<(u64, u64)> ) -> Option<Vec<u64>> {
+    let mut pivot = pivot;
+
+    for v in &vertices[pivot..] {
+        pivot += 1;
+        //if this vertex is in the clique
+        if clique.iter().all(|u| neighbors.contains(&(*u,*v))) {
+            let mut new_clique = clique.clone();
+            new_clique.push(*v);
+
+            if new_clique.len() == k {
+                return Some(new_clique.to_vec());
+            }
+            //recurse from this point
+            if let Some(result) = k_clique_inner(k, pivot, &new_clique, vertices, neighbors) {
+                return Some(result);
+            }
+        }
+    }
+
+    return None;
+}
+
+fn bron_kerbosch(r: &HashSet<u64>, p: &mut HashSet<u64>, x: &mut HashSet<u64>, neighbors: &mut HashMap<u64, Vec<u64>>) -> Vec<Vec<u64>> {
+    /* from Wikipedia:
+    algorithm BronKerbosch1(R, P, X) is
+        if P and X are both empty then
+            report R as a maximal clique
+        for each vertex v in P do
+            BronKerbosch1(R ⋃ {v}, P ⋂ N(v), X ⋂ N(v))
+            P := P \ {v}
+            X := X ⋃ {v}
+    */
+
+    //if P and X are both empty then
+    //    report R as a maximal clique 
+    if p.len() == 0 && x.len() == 0 {
+        return vec![r.into_iter().map(|&x| x).collect()];
+    }
+    //for each vertex v in P do
+
+    let mut cliques = Vec::new();
+    let mut pp: HashSet<_> = p.iter().map(|&x| x).collect();
+    for v in p.iter() {
+        //BronKerbosch1(R ⋃ {v}, P ⋂ N(v), X ⋂ N(v))
+        let mut v_set = HashSet::new();
+        v_set.insert(*v);
+        let mut v_neighbors: HashSet<_> = neighbors.get(&v).unwrap().iter().map(|&x| x).collect();
+        cliques.append(&mut bron_kerbosch(
+            &mut r.union(&v_set).map(|&x| x).collect(), 
+            &mut pp.intersection(&v_neighbors).map(|&x| x).collect(), 
+            &mut x.intersection(&v_neighbors).map(|&x| x).collect(), 
+            neighbors));
+
+        //P := P \ {v}
+        //X := X ⋃ {v}
+        x.insert(*v);
+        pp.remove(v);
+ 
+    }
+    return cliques;
+
+    //unimplemented!();
 }
 
 //concatenate the digits of b after the digits of a
