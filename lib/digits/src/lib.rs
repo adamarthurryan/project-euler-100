@@ -23,6 +23,12 @@ mod tests {
         assert_eq!(Digits::new(35253).digit_sum(), 18);
     }
     #[test]
+    fn digit_length_works() {
+        assert_eq!(digit_length(33), 2);
+        assert_eq!(digit_length(100), 3);
+        assert_eq!(digit_length(99), 2);
+    }
+    #[test]
     fn add() {
 
         assert_eq!((Digits::new(35253) + Digits::new(453223)).to_num(), 488476);
@@ -39,7 +45,17 @@ mod tests {
         assert_eq!((Digits::new(123) * Digits::new(456)).to_num(), 56088);
         assert_eq!((Digits::new(123456789) * Digits::new(123456789)).to_num(), 15241578750190521);
     }
+    #[test]
+    fn pow() {
+        assert_eq!(Digits::new(3).pow(2).to_num(), 9);
+        assert_eq!(Digits::new(4).pow(4).to_num(), 256);
+        assert_eq!(Digits::new(1).pow(1).to_num(), 1);
+        assert_eq!(Digits::new(3).pow(0).to_num(), 1);
+        assert_eq!(Digits::new(5).pow(4).to_num(), 625);
+    }
+
 }
+
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct Digits {
@@ -64,12 +80,27 @@ impl Digits {
         from_digits(&self.digits)
     }
 
+    pub fn to_string(&self) -> String {
+        self.digits.iter().rev().fold(String::new(), |a, b| a + &b.to_string())
+    }
+
     pub fn sort(&mut self) {
         self.digits.sort();
     }
 
     pub fn len(&self) -> usize {
         self.digits.len()
+    }
+
+    pub fn pow(&self, e: usize) -> Self{
+        let mut result = Digits::new(1);
+        for _i in 0..e {
+            //not sure why we need to clone self
+            //should be just able to deref... doesn't need to be moved
+            result = result * self.clone();
+        }
+
+        return result;
     }
 }
 
@@ -215,4 +246,8 @@ pub fn digits_mul(a: &[usize], b: &[usize]) -> Vec<usize> {
 
     //combine zi into a single number
     return digits_add(&z2, &digits_add(&z1, &z0));
+}
+
+pub fn digit_length(n:usize) -> usize {
+    ((n+1) as f64).log10().ceil() as usize
 }
