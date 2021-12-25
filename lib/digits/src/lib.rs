@@ -1,3 +1,7 @@
+use std::ops::Add;
+use std::ops::Mul;
+
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -10,42 +14,97 @@ mod tests {
     
     #[test]
     fn palindromes() {
-        assert_eq!(is_palindrome(&to_digits(35262)), false);
-        assert_eq!(is_palindrome(&to_digits(35253)), true);
+        assert_eq!(Digits::new(35262).is_palindrome(), false);
+        assert_eq!(Digits::new(35253).is_palindrome(), true);
     }
 
     #[test]
     fn digit_sums() {
-        assert_eq!(digit_sum(&to_digits(35253)), 18);
+        assert_eq!(Digits::new(35253).digit_sum(), 18);
     }
     #[test]
     fn add() {
-        assert_eq!(from_digits(&digits_add(&to_digits(35253), &to_digits(453223))), 488476);
-        assert_eq!(from_digits(&digits_add(&to_digits(84894), &to_digits(453223))), 538117);
-        assert_eq!(from_digits(&digits_add(&to_digits(87), &to_digits(7))), 94);
-        assert_eq!(from_digits(&digits_add(&to_digits(9), &to_digits(99))), 108);
+
+        assert_eq!((Digits::new(35253) + Digits::new(453223)).to_num(), 488476);
+        assert_eq!((Digits::new(84894) + Digits::new(453223)).to_num(), 538117);
+        assert_eq!((Digits::new(87) + Digits::new(7)).to_num(), 94);
+        assert_eq!((Digits::new(9) + Digits::new(99)).to_num(), 108);
     }
     #[test]
     fn mul() {
-        assert_eq!(from_digits(&digits_mul(&to_digits(0), &to_digits(999))), 0);
-        assert_eq!(from_digits(&digits_mul(&to_digits(1), &to_digits(1))), 1);
-        assert_eq!(from_digits(&digits_mul(&to_digits(9), &to_digits(9))), 81);
-        assert_eq!(from_digits(&digits_mul(&to_digits(9), &to_digits(900))), 8100);
-        assert_eq!(from_digits(&digits_mul(&to_digits(123), &to_digits(456))), 56088);
-        assert_eq!(from_digits(&digits_mul(&to_digits(123456789), &to_digits(123456789))), 15241578750190521);
+        assert_eq!((Digits::new(0) * Digits::new(999)).to_num(), 0);
+        assert_eq!((Digits::new(1) * Digits::new(1)).to_num(), 1);
+        assert_eq!((Digits::new(9) * Digits::new(9)).to_num(), 81);
+        assert_eq!((Digits::new(9) * Digits::new(900)).to_num(), 8100);
+        assert_eq!((Digits::new(123) * Digits::new(456)).to_num(), 56088);
+        assert_eq!((Digits::new(123456789) * Digits::new(123456789)).to_num(), 15241578750190521);
     }
 }
 
-pub fn digit_sum(n: &Vec<u64>) -> u64 {
-    n.iter().sum()
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+pub struct Digits {
+    base: usize, //unused so far
+    digits: Vec<usize>
 }
 
-pub fn is_palindrome(n: &Vec<u64>) -> bool {
-    n.iter().zip(n.iter().rev()).take(n.len()/2+1).all(|(a,b)| a==b)
+impl Digits {
+    pub fn new(n: usize) -> Self {
+        Digits{base:10, digits:to_digits(n)}
+    }
+
+    pub fn digit_sum(&self) -> usize {
+        self.digits.iter().sum()
+    }
+    
+    pub fn is_palindrome(&self) -> bool {
+        self.digits.iter().zip(self.digits.iter().rev()).take(self.digits.len()/2+1).all(|(a,b)| a==b)
+    }
+
+    pub fn to_num(&self) -> usize {
+        from_digits(&self.digits)
+    }
+
+    pub fn sort(&mut self) {
+        self.digits.sort();
+    }
+
+    pub fn len(&self) -> usize {
+        self.digits.len()
+    }
+}
+
+impl Add for Digits {
+    type Output = Self;
+    
+    fn add(self, other: Self) -> Self {
+        if self.base != other.base {
+            panic!("Attempt to add digits with different bases");
+        }
+
+        Self {
+            base: self.base,
+            digits: digits_add(&self.digits, &other.digits),
+        }
+    }
+}
+    
+impl Mul for Digits {
+    type Output = Self;
+    
+    fn mul(self, other: Self) -> Self {
+        if self.base != other.base {
+            panic!("Attempt to multiply digits with different bases");
+        }
+        
+        Self {
+            base: self.base,
+            digits: digits_mul(&self.digits, &other.digits),
+        }
+    }
 }
 
 //return the base 10 digits in a number, least to most significant
-pub fn to_digits(n: u64) -> Vec<u64> {
+fn to_digits(n: usize) -> Vec<usize> {
     if n==0 { return vec![]; }
     let mut a = Vec::new();
     let mut n = n;
@@ -58,7 +117,7 @@ pub fn to_digits(n: u64) -> Vec<u64> {
 }
 
 //returns the number represented by the given digits in base 10
-pub fn from_digits(digits:&Vec<u64>) -> u64 {
+fn from_digits(digits:&[usize]) -> usize {
     let mut n=0;
     for d in digits.iter().rev() {
         n = n*10 + d;
@@ -69,7 +128,7 @@ pub fn from_digits(digits:&Vec<u64>) -> u64 {
 
 //simple digit-wise addition
 //could be generalized to a list of numbers
-pub fn digits_add(a: &Vec<u64>, b: &Vec<u64>) -> Vec<u64> {
+fn digits_add(a: &[usize], b: &[usize]) -> Vec<usize> {
     //let a be the longer of a, b
     let (a,b) = if b.len() > a.len() { (b, a) }
     else { (a, b) };
@@ -113,7 +172,7 @@ pub fn digits_add(a: &Vec<u64>, b: &Vec<u64>) -> Vec<u64> {
 //katasuba-ish multiplication
 //xy = x1*y1*10^2m + (x1*y0 + x0*y1)*10^m + x0*y0
 //where x = x1*10^m + x0 and y = y1*10^m + y0
-pub fn digits_mul(a: &[u64], b: &[u64]) -> Vec<u64> {
+pub fn digits_mul(a: &[usize], b: &[usize]) -> Vec<usize> {
     //let a be the longer of a, b
     let (a,b) = if b.len() > a.len() { (b, a) }
         else { (a, b) };

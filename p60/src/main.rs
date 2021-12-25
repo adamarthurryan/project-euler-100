@@ -19,19 +19,23 @@ mod tests {
         assert_eq!(concatenate(55,68), 5568);
         assert_eq!(concatenate(3, 123091), 3123091);
         assert_eq!(concatenate(213,8), 2138);
-        assert_eq!(solution(), Option(26033));
+    }
+
+    #[test]
+    fn solves_problem() {
+        assert_eq!(solve(), Some(26033));
     }
 }
 
 
 
 fn main() {
-    let Option(solution) = solve();
-    println!("Solution: {}", solution);
+    let solution = solve();
+    println!("Solution: {}", solution.expect("No solution found."));
 
 }
 
-fn solve () -> Option(usize) {
+fn solve () -> Option<u64> {
     let sieve = primal::Sieve::new(100_000_000);
     let primes: Vec<u64> = sieve.primes_from(3).take_while(|&p| p<10_000).map(|p| p as u64).collect();
 
@@ -72,14 +76,17 @@ fn solve () -> Option(usize) {
 
     //find a k-clique
     let clique = find_k_clique(5, &vertices, &neighbors);
-    if let Some(clique) = clique {
-        println!("5-clique found: {:?}", clique);
-    }
-    else {
-        println!("no 5-clique found");
+    match clique {
+        Some(clique) => {
+            println!("5-clique found: {:?}", clique);
+            return Some(clique.into_iter().sum());    
+        }
+        _ => {
+            println!("no 5-clique found");
+            return None;
+        }
     }
 
-    return clique.product();
 }
 
 
