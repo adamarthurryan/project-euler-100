@@ -1,106 +1,92 @@
+use primal::Sieve;
+
 #[cfg(test)]
 mod tests {
     use super::*;
 
     #[test]
-    fn is_prime_works() {
-        let seive = Seive::new(10);
-        assert_eq!(seive.is_prime(2), true);
-        assert_eq!(seive.is_prime(3), true);
-        assert_eq!(seive.is_prime(37), true);
-        assert_eq!(seive.is_prime(64), false);
-        assert_eq!(seive.is_prime(89), true);
+    fn totient_works() {
+        let sieve = Sieve::new(1_000);
+    
+        assert_eq!(totient(&sieve, 2), 1);
+        assert_eq!(totient(&sieve, 3), 2);
+        assert_eq!(totient(&sieve, 7), 6);
+        assert_eq!(totient(&sieve, 10), 4);
+        assert_eq!(totient(&sieve, 93), 60);
+        assert_eq!(totient(&sieve, 69), 44);
+        assert_eq!(totient(&sieve, 89), 88);
     }
+
     #[test]
-    fn primes_works() {
-        //..
+    fn totient_sieve_works() {
+        let ts = TotientSieve::new(1_000);
+    
+        assert_eq!(ts.totient(2), 1);
+        assert_eq!(ts.totient(3), 2);
+        assert_eq!(ts.totient(7), 6);
+        assert_eq!(ts.totient(10), 4);
+        assert_eq!(ts.totient(93), 60);
+        assert_eq!(ts.totient(69), 44);
+        assert_eq!(ts.totient(89), 88);
     }
 }
 
-pub struct Seive {
-    primality: Vec<bool>,
-    limit: u64
+
+pub fn totient(sieve: &Sieve, n:usize) -> usize {
+    let factors = sieve.factor(n).unwrap();
+    let mut phi: usize = 1;
+    for (p,k) in factors {
+        phi *= (p.pow((k-1) as u32) as usize) * (p-1)
+    }
+
+    return phi;
 }
 
-//classic Seive of Erasthemes algorithm
-//return table of primality for numbers up to to n 
-impl Seive {
-    pub fn new(limit: u64) -> Seive {
-        let mut primality = vec![true; limit as usize + 1];
-        
-        primality[0] = false;
-        primality[1] = false;
+pub struct TotientSieve {
+    limit: usize,
+    values: Vec<usize>
+}
 
-        //flag non-primes 
-        for i in 2..=isqrt(limit) {
-            if primality[i as usize] {
-                for j in (i*i..).step_by(i as usize).take_while(|x| x <= &limit) {
-                    primality[j as usize] = false; 
+/* There is a faster algorithm for this:
+Now, this is pretty simple but it requires a division at each iteration of step 3. We can instead start from 1 and only have to do multiplication:
+
+1. Initialize the array from 2:n with the value 1, and start at m = 2.
+2. If the value at m is still 1, m is prime.
+3. Calculate the largest  mk≤n  and set  t[i]=mk−i−1(m−1)  via repeated multiplication. Visit  2mk,3mk,...  and multiply those entries by  t[k] .
+4. Do the same for  mk−1  but instead skip the multiples of  m  while iterating. I.e., if m=2 then visit  mk−1,3mk−1,5mk−1,...  and multiply each by  t[k−1] . Repeat for all powers of  m . including  m1 .
+5. Increment m and go back to step 2
+
+Step 4 can be done as a double-loop to avoid a division check. (We need to not visit  xmk  and then visit it again as a multiple of  m  or  m2 .)
+*/
+impl TotientSieve {
+    pub fn new(limit: usize) -> Self {
+        //start with values 2..limit
+        let mut values: Vec<usize> = (2..=limit).collect();
+        
+        for m in 2..=limit {
+            //if m is a prime
+            if values[m-2] == m {
+                //multiply each km by (1-1/m) ie. v-v/m
+                for n in (m..).step_by(m).take_while(|&k| k <= limit) {
+                    values[n-2] = values[n-2] - values[n-2]/m;
                 }
             }
         }
         
-        return Seive{primality, limit};
+        TotientSieve{limit, values}
     }
 
-    pub fn primes(&self) -> SeivePrimes {
-        SeivePrimes::new(self)
-    }
-
-    //returns true if n is a prime
-    //panics if n > limit^2
-    pub fn is_prime(&self, n:u64) -> bool {
-        //lookup values of n that are covered by the seive
-        if n <= self.limit {
-            return self.primality[n as usize];
+    pub fn totient(&self, n: usize) -> usize {
+        if n==0 {
+            panic!("phi(0) is undefined");
+        }
+        if n==1 {
+            return 1;
+        }
+        if n-2 > self.limit {
+            panic!("Attempted to look up phi({}) for sieve with limit {}", n, self.limit)
         }
 
-        //other values need to be tested
-        //fail is n > limit^2
-        let sqrt_n = isqrt(n);
-        if sqrt_n > self.limit {
-            panic!("testing n={} is out of range of seive with limit={}", n, self.limit);
-        }
-
-        //get an iterator of primes
-        let primes = self.primes();
-
-        //look for a prime factor of n
-        for p in primes.take_while(|p| *p <= sqrt_n+1) {
-            if n % p == 0 { return false; }
-        }
-        return true;    
+        self.values[n-2]
     }
-}
-
-pub struct SeivePrimes<'a> {
-    seive: &'a Seive,
-    next: u64
-}
-
-impl <'a> SeivePrimes<'a> {
-    pub fn new (seive: &Seive) -> SeivePrimes {
-        SeivePrimes { seive, next:2}
-    }
-}
-
-impl <'a>Iterator for SeivePrimes<'a> {
-    type Item = u64;
-
-    fn next(&mut self) -> Option<u64> {
-        for i in self.next..self.seive.limit+1 {
-            if self.seive.primality[i as usize] {
-                self.next = i+1;
-                return Some(i);
-            }
-        }
-
-        self.next = self.seive.limit+1;
-        return None;
-    }
-}
-
-//simple integer square root
-fn isqrt(n: u64) -> u64 {
-    (n as f64).sqrt() as u64
 }

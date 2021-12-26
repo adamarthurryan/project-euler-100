@@ -1,5 +1,5 @@
 [package]
-name = "p69"
+name = "p70"
 version = "0.1.0"
 edition = "2021"
 
@@ -7,4 +7,5 @@ edition = "2021"
 
 [dependencies]
 primal = "0.3.0"
+digits = { path = "../lib/digits" }
 primes = { path = "../lib/primes" }

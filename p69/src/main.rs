@@ -8,19 +8,8 @@ Find the value of n ≤ 1,000,000 for which n/φ(n) is a maximum.
 */
 
 use primal::Sieve;
+use primes::totient;
 
-#[test]
-fn totient_works() {
-    let sieve = Sieve::new(1_000);
-
-    assert_eq!(totient(&sieve, 2), 1);
-    assert_eq!(totient(&sieve, 3), 2);
-    assert_eq!(totient(&sieve, 7), 6);
-    assert_eq!(totient(&sieve, 10), 4);
-    assert_eq!(totient(&sieve, 93), 60);
-    assert_eq!(totient(&sieve, 69), 44);
-    assert_eq!(totient(&sieve, 89), 88);
-}
 
 #[test]
 fn solves() {
@@ -50,12 +39,3 @@ fn solve() -> usize {
     return the_n;
 }
 
-fn totient(sieve: &Sieve, n:usize) -> usize {
-    let factors = sieve.factor(n).unwrap();
-    let mut phi: usize = 1;
-    for (p,k) in factors {
-        phi *= (p.pow((k-1) as u32) as usize) * (p-1)
-    }
-
-    return phi;
-}

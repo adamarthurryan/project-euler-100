@@ -215,7 +215,7 @@ fn digits_add(a: &[usize], b: &[usize]) -> Vec<usize> {
 //katasuba-ish multiplication
 //xy = x1*y1*10^2m + (x1*y0 + x0*y1)*10^m + x0*y0
 //where x = x1*10^m + x0 and y = y1*10^m + y0
-pub fn digits_mul(a: &[usize], b: &[usize]) -> Vec<usize> {
+fn digits_mul(a: &[usize], b: &[usize]) -> Vec<usize> {
     //let a be the longer of a, b
     let (a,b) = if b.len() > a.len() { (b, a) }
         else { (a, b) };
@@ -262,4 +262,15 @@ pub fn digits_mul(a: &[usize], b: &[usize]) -> Vec<usize> {
 
 pub fn digit_length(n:usize) -> usize {
     ((n+1) as f64).log10().ceil() as usize
+}
+
+pub fn digit_freq(n:usize) -> [usize;10] {
+    let mut freq = [0;10];
+    let mut n = n;
+    while n>0 {
+        freq[n%10] += 1;
+        n = n/10;
+    }
+
+    return freq;
 }
