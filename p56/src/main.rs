@@ -1,22 +1,28 @@
-use digits;
+use digits::Digits;
+
+#[test]
+fn solves() {
+    assert_eq!(solve(), 972);
+}
 
 fn main() {
+    println!("Solution: {}", solve());
+}
+
+fn solve() -> usize {
     let mut max_sum = 0;
 
     for a in 1..100 {
-        let mut a_b = digits::to_digits(a);  
+        let mut a_b = Digits::new(a);  
         for b in 1..100 {
-            a_b = digits::digits_mul(&a_b, &digits::to_digits(a));
-            let sum = digits::digit_sum(&a_b);
+            a_b = a_b * Digits::new(a);
+            let sum = a_b.digit_sum();
 
             if sum>max_sum {
-                println!("New max: digit_sum({}^{}) = {}", a, b, sum);
                 max_sum = sum;
             }
         }
     }
-}
 
-fn digit_sum(n:u64) -> u64 {
-    digits::digit_sum(&digits::to_digits(n))
+    return max_sum;
 }

@@ -68,6 +68,10 @@ impl Digits {
         Digits{base:10, digits:to_digits(n)}
     }
 
+    pub fn from_digits(digits: Vec<usize>) -> Self {
+        Digits{base:10, digits}
+    }
+
     pub fn digit_sum(&self) -> usize {
         self.digits.iter().sum()
     }
@@ -82,6 +86,14 @@ impl Digits {
 
     pub fn to_string(&self) -> String {
         self.digits.iter().rev().fold(String::new(), |a, b| a + &b.to_string())
+    }
+
+    pub fn digits(&self) -> &Vec<usize> {
+        &self.digits
+    }
+
+    pub fn digits_mut(&mut self) -> &mut Vec<usize> {
+        &mut self.digits
     }
 
     pub fn sort(&mut self) {
