@@ -1,4 +1,6 @@
 use std::convert::From;
+use std::fmt;
+
 use std::cmp::{Ord, PartialOrd, Ordering};
 
 #[cfg(test)]
@@ -11,6 +13,19 @@ mod tests {
         assert_eq!(gcf(19,6), 1);
         assert_eq!(gcf(60,24), 12);
     }
+
+    #[test]
+    fn sb_fractions_works() {
+        let fracs: Vec<_> = SternBrocotFractions::new(4).collect();
+        println!("fracs: {:?}",fracs);
+
+        assert_eq!(fracs[0], Fraction::new(1,4));
+        assert_eq!(fracs[1], Fraction::new(1,3));
+        assert_eq!(fracs[2], Fraction::new(1,2));
+        assert_eq!(fracs[3], Fraction::new(2,3));
+        assert_eq!(fracs[4], Fraction::new(3,4));
+    }
+
 
     #[test]
     fn into_f64_works() {
@@ -45,7 +60,7 @@ pub fn gcf(a:usize, b:usize) -> usize {
 }
 
 
-#[derive(Debug, Copy, Clone, PartialEq, Eq, Hash)]
+#[derive(Copy, Clone, PartialEq, Eq, Hash)]
 pub struct Fraction {
     pub n: usize,
     pub d: usize,
@@ -92,33 +107,69 @@ impl From<Fraction> for f64 {
     }
 }
 
-
-pub struct CantorFractions {
-    d:usize,
-    n:usize 
+impl fmt::Debug for Fraction {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.write_fmt(format_args!("{}/{}", self.n, self.d))
+    }
 }
 
-impl CantorFractions {
-    pub fn new() -> Self {
-        CantorFractions{d:1, n:2}
+
+enum SternBrocotStackItem {
+    Branch(Fraction,Fraction),
+    Node(Fraction)
+}
+
+pub struct SternBrocotFractions {
+    stack: Vec<SternBrocotStackItem>,
+    max_denom: usize
+}
+
+impl SternBrocotFractions {
+    //an iterator for all fractions in the range 0/1 .. 1/1
+    //with given maximum denominator 
+    pub fn new(max_denom: usize) -> Self {
+        SternBrocotFractions{max_denom, stack: vec![SternBrocotStackItem::Branch(Fraction::new(0,1), Fraction::new(1,1))]}
+    }
+
+    pub fn with_range(max_denom: usize, lower: Fraction, upper: Fraction ) -> Self {
+        SternBrocotFractions{max_denom, stack: vec![SternBrocotStackItem::Branch(lower, upper)]}
     }
 }
 
 //iterator for the reduced fractions
-impl Iterator for CantorFractions {
+impl Iterator for SternBrocotFractions {
     type Item = Fraction;
 
+
+    // has to go all the way down the left branch
+    // then start emitting and work it's way back around
+    
+    /*pseudocode:
+
+    fn emit(left, right) {
+        med = mediant(left, right)
+        emit(left, mid)
+        emit mid
+        emit(mid, right)
+    }
+*/
+
     fn next(&mut self) -> Option<Self::Item> {
-        let frac = Fraction::new(self.n,self.d);
-        while gcf(self.n,self.d) != 1 {
-            if self.d >= self.n-1 {
-                self.n += 1;
-                self.d = 1;
-            }
-            else {
-                self.d += 1;
+
+        while let Some(stack_item) = self.stack.pop() {
+            match stack_item {
+                SternBrocotStackItem::Node(mediant) => { return Some(mediant) }
+                SternBrocotStackItem::Branch(left, right) => {
+                    let mediant = Fraction::new(left.n+right.n, left.d+right.d);
+                    if mediant.d <= self.max_denom {
+                        self.stack.push(SternBrocotStackItem::Branch(mediant, right));
+                        self.stack.push(SternBrocotStackItem::Node(mediant));
+                        self.stack.push(SternBrocotStackItem::Branch(left, mediant));
+                    }
+                }
             }
         }
-        return Some(frac);
+        
+        return None;
     }
 }

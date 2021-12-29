@@ -8,6 +8,7 @@ fn solves() {
 
 fn main() {
     println!("solve(8): {}", solve(8));
+    println!("solve(12,000): {}", solve(12_000));
     println!("Solution: {}", solve(1_000_000));
 }
 
