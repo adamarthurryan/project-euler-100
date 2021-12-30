@@ -29,6 +29,11 @@ fn main() {
 
 //or a=k(m^2-n^2)/2, b=kmn, c=k(m^2+n^2)/2
 //for m, n, k positive integers with m, n coprime and both odd
+
+//generate all triples with a+b+c <= L
+  //use sb tree to generate coprime pairs of m,n, then iterate on k
+//tabulate the length of each one
+//find entries with length = 1
 fn solve() -> usize {
     unimplemented!();
 }
