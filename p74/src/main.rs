@@ -22,7 +22,7 @@ How many chains, with a starting number below one million, contain exactly sixty
 
 
 use digits::Digits;
-use std::collections::HashSet;
+use std::collections::{HashSet, HashMap};
 
 #[test]
 fn solves() {
@@ -35,39 +35,40 @@ fn main() {
 
 /* This solution is very slow. Some new ideas are needed. Maybe a short list of possible loop ending values? 
 Is there a way to not have to test every string?
-The larger numbers must converge quickly to smaller numbers... so maybe that can help.
 Memoization of chain lengths seems like the preferred solution in the forums.
 */
 fn solve() -> usize {
     //cache the factorials from 0 through 9
     let factorials: Vec<usize> = (0..=9).map(|n| factorial(n)).collect();
-    println!("factorials:{:?}", factorials);
+    println!("Buckle up, this is a slow one.");
     let mut count = 0;
-    for n in 100..1_000_000 {
+    for n in 1..1_000_000 {
         if n%10_000 == 0 {
             println!("n: {}, count:{}", n, count);
         }
-        if count_steps(n, &factorials, &mut HashSet::new()) == 60 {
+        if count_steps(n, &factorials, &mut HashSet::new(), &mut HashMap::new()) == 60 {
             count += 1;
         }
     }
-
-//println!("count_steps(69): {}", count_steps(69,&factorials, &mut HashSet::new()));
-//println!("count_steps(145): {}", count_steps(145,&factorials, &mut HashSet::new()));
-
     return count;
 }
 
-fn count_steps(n: usize, factorials: &Vec<usize>,  hits: &mut HashSet<usize>) -> usize {
+fn count_steps(n: usize, factorials: &Vec<usize>,  hits: &mut HashSet<usize>, memo: &mut HashMap<usize,usize>) -> usize {
+    if let Some(&count) = memo.get(&n) {
+        return count;
+    }
+    
     if hits.contains(&n) {
-        println!("hit: {}", n);
         return 0;
     }
     hits.insert(n);
 
+
     let digits = Digits::new(n);
     let n_prime = digits.digits().into_iter().map(|&d| factorials[d]).sum();
-    return 1 + count_steps(n_prime, factorials, hits);
+    let count = 1 + count_steps(n_prime, factorials, hits, memo);
+    memo.insert(n,count);
+    return count;
 }
 
 fn factorial(n: usize) -> usize {
