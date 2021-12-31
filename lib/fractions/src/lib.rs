@@ -125,12 +125,13 @@ pub struct SternBrocotFractions {
 }
 
 impl SternBrocotFractions {
-    //an iterator for all fractions in the range 0/1 .. 1/1
+    //an iterator for all reduced fractions in the range 0/1 .. 1/1
     //with given maximum denominator 
     pub fn new(max_denom: usize) -> Self {
         SternBrocotFractions{max_denom, stack: vec![SternBrocotStackItem::Branch(Fraction::new(0,1), Fraction::new(1,1))]}
     }
 
+    //an iterator for reduced fractions in the given range (exclusive)
     pub fn with_range(max_denom: usize, lower: Fraction, upper: Fraction ) -> Self {
         SternBrocotFractions{max_denom, stack: vec![SternBrocotStackItem::Branch(lower, upper)]}
     }
@@ -143,24 +144,16 @@ impl Iterator for SternBrocotFractions {
 
     // has to go all the way down the left branch
     // then start emitting and work it's way back around
-    
-    /*pseudocode:
-
-    fn emit(left, right) {
-        med = mediant(left, right)
-        emit(left, mid)
-        emit mid
-        emit(mid, right)
-    }
-*/
-
-    fn next(&mut self) -> Option<Self::Item> {
-
+     fn next(&mut self) -> Option<Self::Item> {
         while let Some(stack_item) = self.stack.pop() {
             match stack_item {
+                //for Node items, return the mediant
                 SternBrocotStackItem::Node(mediant) => { return Some(mediant) }
+                //for Branch items, traverse the branch
                 SternBrocotStackItem::Branch(left, right) => {
+                    //calculate the mediant
                     let mediant = Fraction::new(left.n+right.n, left.d+right.d);
+                    //if the mediant is in range, push the branches and node onto the stack
                     if mediant.d <= self.max_denom {
                         self.stack.push(SternBrocotStackItem::Branch(mediant, right));
                         self.stack.push(SternBrocotStackItem::Node(mediant));
@@ -171,5 +164,31 @@ impl Iterator for SternBrocotFractions {
         }
         
         return None;
+    }
+}
+
+//traverse the Stern-Brocot tree of reduced fractions with the given emit and branch functions
+//emit will be called with every fraction that is found by the iterator in order
+//branch will be called when each node is visited and should return true if the traversal should continue
+//down that node or backtrack to the parent 
+pub fn stern_brocot_traversal(emit: &mut dyn FnMut(Fraction) -> (), branch: &dyn Fn(Fraction) -> bool) {
+    let mut stack: Vec<SternBrocotStackItem> = Vec::new();
+    stack.push(SternBrocotStackItem::Branch(Fraction::new(0,1), Fraction::new(1,1)));   
+    while let Some(stack_item) = stack.pop() {
+        match stack_item {
+            //for Node items, return the mediant
+            SternBrocotStackItem::Node(mediant) => { emit(mediant) }
+            //for Branch items, traverse the branch
+            SternBrocotStackItem::Branch(left, right) => {
+                //calculate the mediant
+                let mediant = Fraction::new(left.n+right.n, left.d+right.d);
+                //if the mediant is in range, push the branches and node onto the stack
+                if branch(mediant) {
+                    stack.push(SternBrocotStackItem::Branch(mediant, right));
+                    stack.push(SternBrocotStackItem::Node(mediant));
+                    stack.push(SternBrocotStackItem::Branch(left, mediant));
+                }
+            }
+        }
     }
 }
