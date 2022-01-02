@@ -16,7 +16,7 @@ mod tests {
 
     #[test]
     fn sb_fractions_works() {
-        let fracs: Vec<_> = SternBrocotFractions::new(4).collect();
+        let fracs: Vec<_> = SternBrocotFractions::new(|mediant| mediant.d <=4).collect();
         println!("fracs: {:?}",fracs);
 
         assert_eq!(fracs[0], Fraction::new(1,4));
@@ -119,26 +119,67 @@ enum SternBrocotStackItem {
     Node(Fraction)
 }
 
-pub struct SternBrocotFractions {
+
+//the implementation of the branch test in a box is not idiomatic
+//a better implementation would be to use an enum to select between a branch_test and a max_denom
+//then the type of the closure would come from the calling function to the iterator constructor
+//and it would work with generics?
+//or maybe if the ::new and ::with_range calls were routed through ::with_branch_test that would work with generics
+pub struct SternBrocotFractions <F>
+where F: Fn(Fraction) -> bool 
+{
     stack: Vec<SternBrocotStackItem>,
-    max_denom: usize
+    branch_test: F,
 }
 
-impl SternBrocotFractions {
+
+impl <F> SternBrocotFractions <F> 
+where F: Fn(Fraction) -> bool 
+{
+
+    /* Can't figure out how to have the closure be generated from within the constructor...
+
     //an iterator for all reduced fractions in the range 0/1 .. 1/1
     //with given maximum denominator 
-    pub fn new(max_denom: usize) -> Self {
-        SternBrocotFractions{max_denom, stack: vec![SternBrocotStackItem::Branch(Fraction::new(0,1), Fraction::new(1,1))]}
+    pub fn new(max_denom: usize) -> SternBrocotFractions<impl Fn(Fraction)->bool> {
+        Self::with_range(max_denom, Fraction::new(0,1), Fraction::new(1,1))
     }
 
     //an iterator for reduced fractions in the given range (exclusive)
-    pub fn with_range(max_denom: usize, lower: Fraction, upper: Fraction ) -> Self {
-        SternBrocotFractions{max_denom, stack: vec![SternBrocotStackItem::Branch(lower, upper)]}
+    pub fn with_range(max_denom: usize, lower: Fraction, upper: Fraction ) -> SternBrocotFractions <impl Fn(Fraction,)->bool> {
+        let branch_test = move |mediant: Fraction| mediant.d <= max_denom;
+
+        SternBrocotFractions::with_range_and_branch_test(branch_test,lower, upper)
+    }
+    */
+
+    fn mediant(left: Fraction, right: Fraction) -> Fraction {
+        Fraction::new(left.n+right.n, left.d+right.d)
+    }
+
+        //an iterator for fractions in the range 0/1 .. 1/1
+    //the given branch test will be called to decide whether to evaluate each branch
+    pub fn new(branch_test: F) -> SternBrocotFractions <F>  {
+        SternBrocotFractions{
+            stack: vec![SternBrocotStackItem::Branch(Fraction::new(0,1), Fraction::new(1,1))], 
+            branch_test
+        }
+    }
+
+    //an iterator for fractions in the range 0/1 .. 1/1
+    //the given branch test will be called to decide whether to evaluate each branch
+    pub fn with_range(branch_test: F, lower: Fraction, upper: Fraction) -> SternBrocotFractions <F>{
+        SternBrocotFractions{
+            stack: vec![SternBrocotStackItem::Branch(lower, upper)], 
+            branch_test: branch_test
+        }
     }
 }
 
 //iterator for the reduced fractions
-impl Iterator for SternBrocotFractions {
+impl <F> Iterator for SternBrocotFractions <F> 
+    where F: Fn(Fraction) -> bool
+{
     type Item = Fraction;
 
 
@@ -152,9 +193,9 @@ impl Iterator for SternBrocotFractions {
                 //for Branch items, traverse the branch
                 SternBrocotStackItem::Branch(left, right) => {
                     //calculate the mediant
-                    let mediant = Fraction::new(left.n+right.n, left.d+right.d);
+                    let mediant = SternBrocotFractions::<F>::mediant(left, right);
                     //if the mediant is in range, push the branches and node onto the stack
-                    if mediant.d <= self.max_denom {
+                    if (self.branch_test)(mediant) {
                         self.stack.push(SternBrocotStackItem::Branch(mediant, right));
                         self.stack.push(SternBrocotStackItem::Node(mediant));
                         self.stack.push(SternBrocotStackItem::Branch(left, mediant));
@@ -167,6 +208,7 @@ impl Iterator for SternBrocotFractions {
     }
 }
 
+/*
 //traverse the Stern-Brocot tree of reduced fractions with the given emit and branch functions
 //emit will be called with every fraction that is found by the iterator in order
 //branch will be called when each node is visited and should return true if the traversal should continue
@@ -192,3 +234,4 @@ pub fn stern_brocot_traversal(emit: &mut dyn FnMut(Fraction) -> (), branch: &dyn
         }
     }
 }
+*/

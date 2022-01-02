@@ -14,7 +14,7 @@ fn main() {
 }
 
 fn solve(a: Fraction, b:Fraction,  max_d: usize) -> usize {
-    let sb_fractions = SternBrocotFractions::with_range(max_d, a, b);
+    let sb_fractions = SternBrocotFractions::with_range(|mediant| mediant.d<=max_d, a, b);
     return sb_fractions.count();
     //    return sb_tree_count(a,b,max_d);
 

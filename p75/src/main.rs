@@ -15,7 +15,7 @@ In contrast, some lengths of wire, like 20 cm, cannot be bent to form an integer
 Given that L is the length of the wire, for how many values of L ≤ 1,500,000 can exactly one integer sided right angle triangle be formed?
 */
 
-use fractions::{Fraction,stern_brocot_traversal};
+use fractions::{Fraction,SternBrocotFractions};
 use std::collections::{HashMap};
 
 #[test]
@@ -37,25 +37,25 @@ fn main() {
 fn solve(l: usize) -> usize {
     //map each length a+b+c to the number of pythagorean triples that have it
     let mut length_counts: HashMap <usize, usize> = HashMap::new();
-    stern_brocot_traversal(
-        &mut |frac: Fraction| {
-            if frac.n % 2 == 1 && frac.d % 2 == 1 {
-                let mut k = 1;
-                let len = frac.d.pow(2) + frac.n*frac.d;
-                while len*k <= l {
-                    let count = length_counts.entry(len*k).or_insert(0);
-                    *count += 1;
-                    k += 1;
-                }
-    
-            }
-        },
-        //only follow branches that produce triples meeting the length constraint
-        &|frac: Fraction| {
-            frac.d.pow(2) + frac.n*frac.d <= l
 
+    let branch_test = move |mediant: Fraction| mediant.d.pow(2) + mediant.n*mediant.d <= l;
+    
+    let fractions = SternBrocotFractions::new(branch_test);
+
+    //for each emitted fraction, count the lengths of corresponding triples
+    for frac in fractions {
+        if frac.n % 2 == 1 && frac.d % 2 == 1 {
+            let mut k = 1;
+            let len = frac.d.pow(2) + frac.n*frac.d;
+            while len*k <= l {
+                let count = length_counts.entry(len*k).or_insert(0);
+                *count += 1;
+                k += 1;
+            }
         }
-    );
+    }
+
+    //report the number of triples with length 1
     return length_counts.values().filter(|&&v| v==1).count();
 }
 
