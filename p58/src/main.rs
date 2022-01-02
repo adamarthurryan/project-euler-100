@@ -17,12 +17,13 @@ fn main() {
 }
 
 fn solve() -> u64 {
+    //could consider using a smaller sieve and testing with eg. divisors
     let sieve = primal::Sieve::new(1_000_000_000);
 
     let mut num_prime = 0f64;
     let mut num_total = 1f64;
 
-    for n in 1..1_000_000_000_000 {
+    for n in 1..1_000_000_000 {
         let a = diags(n);
         for ai in a {
             if sieve.is_prime(ai as usize) {
