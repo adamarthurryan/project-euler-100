@@ -14,6 +14,12 @@ How many different ways can one hundred be written as a sum of at least two posi
 //p(n) = sum{0<k<=n} pk(n)
 //pk(n) = pk(n − k) + pk−1(n − 1)
 //so we can use dynamic programming to solve
+
+//another way is with generqting functions
+//though it's probably not as fast bc. it requires calculating the sum of divisors 
+
+use memoize::memoize;
+
 #[test]
 fn solves() {
     assert_eq!(solve(5),6);
@@ -27,23 +33,17 @@ fn main () {
 }
 
 fn solve (n:usize) -> usize {
-    let mut memo = vec![vec![0;n+1];n+1];
     let mut sum = 0;
     for k in 0..n {
-        sum+=p(k as isize, n as isize, &mut memo);
+        sum+=p(k as isize, n as isize);
     }
     return sum;
 }
 
-fn p(k:isize, n: isize, memo: &mut Vec<Vec<usize>>) ->  usize {
+#[memoize]
+fn p(k:isize, n: isize) ->  usize {
     if k==0 && n==0 { return 1; }
     else if k<=0 || n<=0 { return 0; }
 
-    if memo[k as usize][n as usize] > 0 {
-        return memo[k as usize][n as usize];
-    }
-
-    let result = p(k, n-k, memo) + p(k-1, n-1, memo);
-    memo[k as usize][n as usize] = result;
-    return result;
+    return p(k, n-k) + p(k-1, n-1);
 }
