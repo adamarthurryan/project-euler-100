@@ -1,5 +1,6 @@
 use std::ops::Add;
 use std::ops::Mul;
+use std::fmt;
 
 
 #[cfg(test)]
@@ -68,8 +69,8 @@ impl Digits {
         Digits{base:10, digits:to_digits(n)}
     }
 
-    pub fn from_digits(digits: Vec<usize>) -> Self {
-        Digits{base:10, digits}
+    pub fn from_digits(digits: &[usize]) -> Self {
+        Digits{base:10, digits:digits.to_vec()}
     }
 
     pub fn digit_sum(&self) -> usize {
@@ -97,7 +98,7 @@ impl Digits {
     }
 
     pub fn sort(&mut self) {
-        self.digits.sort();
+        self.digits.sort_unstable();
     }
 
     pub fn len(&self) -> usize {
@@ -112,7 +113,14 @@ impl Digits {
             result = result * self.clone();
         }
 
-        return result;
+        result
+    }
+}
+
+impl fmt::Display for Digits {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        let string = self.digits.iter().rev().fold(String::new(), |a, b| a + &b.to_string());
+        f.write_str(&string)
     }
 }
 

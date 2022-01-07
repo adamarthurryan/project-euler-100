@@ -23,7 +23,7 @@ fn solve() -> usize {
         }
     }
 
-    return count_lychrel;
+    count_lychrel
 }
 
 fn main() {
@@ -34,7 +34,7 @@ fn main() {
 fn is_lychrel(n:usize) -> bool {
     let mut n = Digits::new(n);
 
-    for i in 0..50 {
+    for _i in 0..50 {
         //is there a more elegant way to do this?
         let mut n_prime = n.clone();
         n_prime.digits_mut().reverse();
@@ -43,5 +43,5 @@ fn is_lychrel(n:usize) -> bool {
             return false;
         }
     }
-    return true;
+    true
 }

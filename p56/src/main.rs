@@ -14,7 +14,7 @@ fn solve() -> usize {
 
     for a in 1..100 {
         let mut a_b = Digits::new(a);  
-        for b in 1..100 {
+        for _b in 1..100 {
             a_b = a_b * Digits::new(a);
             let sum = a_b.digit_sum();
 
@@ -24,5 +24,5 @@ fn solve() -> usize {
         }
     }
 
-    return max_sum;
+    max_sum
 }

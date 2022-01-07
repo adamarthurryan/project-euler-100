@@ -41,5 +41,5 @@ fn limited_binomial_function(cache:&mut HashMap<(u64,u64), u64>, n:u64, k:u64, l
     let val = min(val, limit);
 
     cache.insert((n,k), val);
-    return val;
+    val
 }
