@@ -52,7 +52,7 @@ fn solve_9() -> usize {
         for b in 1..=(1000-a-1) {
             let c = 1000 - a - b;
             let (a2,b2,c2) = ((a as usize).pow(2), (b as usize).pow(2), (c as usize).pow(2));
-            if (a2+b2==c2 || a2+c2==b2 || b2+c2==a2) {
+            if a2+b2==c2 || a2+c2==b2 || b2+c2==a2 {
                 return a*b*c;
             }
         }

@@ -13,8 +13,8 @@ use fractions::Fraction;
 
 #[test]
 fn solves() {
-    assert_eq!(solve(8),2);
-    assert_eq!(solve(1_000_000),428570);
+    assert_eq!(solve(Fraction::new(3,7),8),2);
+    assert_eq!(solve(Fraction::new(3,7),1_000_000),428570);
 }
 
 fn main() {
