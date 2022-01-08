@@ -7,3 +7,4 @@ edition = "2021"
 
 [dependencies]
 primal = "0.3.0"
+memoize = "0.2.1"

@@ -11,6 +11,7 @@ The smallest number expressible as the sum of a prime square, prime cube, and pr
 How many numbers below fifty million can be expressed as the sum of a prime square, prime cube, and prime fourth power?
 */
 
+//tried memoing the prime powers but it didn't make much difference
 use std::collections::HashSet;
 use primal::Primes;
 
@@ -41,20 +42,18 @@ fn solve(n: usize) -> usize {
                 if x < n {
                     nums.insert(x);
                 }
+                else if j>1 && k==1 {
+                    break 'j;
+                }
+                else if k==1 && j==1 {
+                    break 'i;
+                }
                 else {
-                    if j>1 && k==1 {
-                        break 'j;
-                    }
-                    else if k==1 && j==1 {
-                        break 'i;
-                    }
-                    else {
-                        break 'k;
-                    }
+                    break 'k;
                 }
             }
         }
     }
 
-    return nums.len();
+    nums.len()
 }
