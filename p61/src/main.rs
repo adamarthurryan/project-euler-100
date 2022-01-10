@@ -82,12 +82,11 @@ fn find_cycle_inner(nums:  &[Vec<usize>], part: usize, step: usize, path: &[(usi
             //otherwise recurse on each unvisited partition        
             let next_parts = (0..=5).filter(|&part| !visited[part]);
             for next_part in next_parts {
-                match find_cycle_inner(nums, next_part, step+1, &path, &visited) {
-                    Some(cycle) => { return Some(cycle); }
-                    None => {}
+                if let Some(cycle) = find_cycle_inner(nums, next_part, step+1, &path, &visited) {
+                    return Some(cycle);
                 }
             }
         }
     }
-    return None;
+    None
 }

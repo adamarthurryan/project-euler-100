@@ -15,8 +15,8 @@ mod tests {
     
     #[test]
     fn palindromes() {
-        assert_eq!(Digits::new(35262).is_palindrome(), false);
-        assert_eq!(Digits::new(35253).is_palindrome(), true);
+        assert!(!Digits::new(35262).is_palindrome());
+        assert!(Digits::new(35253).is_palindrome());
     }
 
     #[test]
