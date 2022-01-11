@@ -1,43 +1,30 @@
-
+use std::fmt;
 use std::cmp::min;
 use std::collections::{HashSet,HashMap};
+#[test]
+fn solves() {
+    assert_eq!(solve_81(), 427337);
+    assert_eq!(solve_82(), 260324);
+    assert_eq!(solve_83(), 425185);
+}
 
 fn main() {
-    println!("Solution 81: {}", solve_81());      
+//    println!("Solution 81: {}", solve_81());      
+//    println!("Solution 82: {}", solve_82());      
+    println!("Solution 83: {}", solve_83());      
 }
 
 fn solve_81() -> usize {
     let matrix = Matrix::<usize>::parse_usize(include_str!("p081_matrix.txt"));
     let (w,h) = matrix.size();
 
-    //search for optimal path
-    //let mut results: Matrix<Option<usize>> = Matrix::new(w,h,None);
-    //best_path_length(&matrix, &mut results, Point::new(0,0), Point::new((w-1) as isize, (h-1) as isize)).unwrap()
-
-    //create a graph of this matrix
+    //create graph information for this matrix
+    //require start and end nodes
     let start = Point::new(-1, 0);
     let end = Point::new(w as isize,(h-1) as isize);
-    /*
-    let neighbors = |&p: &Point| {
-        let points: Vec<&Point> = Vec::new();
-        //special handling for the end node
-        if p==Point::new((w-1) as isize,(h-1) as isize) {
-            points.push(&end);
-        }
-        let pe = p.neighbor(Dir::E);
-        if matrix.in_bounds(pe) {points.push(&pe);}
-        let ps = p.neighbor(Dir::S);
-        if matrix.in_bounds(ps) {points.push(&ps);}
-        points
-    };
 
-    let costs = |&_p0, &p1| { 
-        if p1==end { 0 }
-        else { matrix.get(p1) } 
-    };
-    */
-
-    lowest_cost_path(start, end, |p: Point| {
+    //neighbors function for edges 
+    let neighbors = |p: Point| { 
         let mut points: Vec<Point> = Vec::new();
         //special handling for the end node
         if p==Point::new((w-1) as isize,(h-1) as isize) {
@@ -48,20 +35,111 @@ fn solve_81() -> usize {
         let ps = p.neighbor(Dir::S);
         if matrix.in_bounds(ps) {points.push(ps);}
         points
-    }, |_p0, p1| { 
-        dbg!(p1);
+    };
+
+    //costs for edges
+    let costs = |_p0, p1| { 
         if p1==end { 0 }
         else { matrix.get(p1) } 
-    }).unwrap()
+    };
+  
+    //find the optimal path
+    lowest_cost_path(start, end, neighbors, costs).unwrap() 
 }
 
+fn solve_82() -> usize {
+    let matrix = Matrix::<usize>::parse_usize(include_str!("p082_matrix.txt"));
+    let (w,h) = matrix.size();
 
+    //create graph information for this matrix
+    //require start and end nodes
+    let start = Point::new(-1, 0);
+    let end = Point::new(w as isize,h as isize);
+
+    //neighbors function for edges 
+    let neighbors = |p: Point| { 
+        let mut points: Vec<Point> = Vec::new();
+        //the start node connects to all points in the first column
+        if p==start {
+            for i in 0..h {
+                points.push(Point::new(0,i as isize));
+            }
+        }
+        //the last column connects to the end node
+        else if p.x == (w-1) as isize {
+            points.push(end);
+        }
+        //the rest of the node connect up, right, and down
+        else {         
+            let dirs = [Dir::N, Dir::E, Dir::S];
+
+            for dir in dirs {
+                let pn = p.neighbor(dir);
+                if matrix.in_bounds(pn) { points.push(pn); }
+            }
+        }
+
+        points
+    };
+
+    //costs for edges
+    let costs = |_p0, p1| { 
+        if p1==end { 0 }
+        else { matrix.get(p1) } 
+    };
+  
+    //find the optimal path
+    lowest_cost_path(start, end, neighbors, costs).unwrap() 
+}
+
+fn solve_83() -> usize {
+    let matrix = Matrix::<usize>::parse_usize(include_str!("p083_matrix.txt"));
+    let (w,h) = matrix.size();
+
+    //create graph information for this matrix
+    //require start and end nodes
+    let start = Point::new(-1, 0);
+    let end = Point::new(w as isize,(h-1) as isize);
+
+    //neighbors function for edges 
+    let neighbors = |p: Point| { 
+        let mut points: Vec<Point> = Vec::new();
+        //the start node connects to all points in the first column
+        if p==start {
+            points.push(Point::new(0,0));
+        }
+        //the last column connects to the end node
+        else if p == Point::new((w-1) as isize, (h-1) as isize) {
+            points.push(end);
+        }
+        //the rest of the node connect up, right, down, and left
+        else {         
+            let dirs = [Dir::N, Dir::E, Dir::S, Dir::W];
+
+            for dir in dirs {
+                let pn = p.neighbor(dir);
+                if matrix.in_bounds(pn) { points.push(pn); }
+            }
+        }
+
+        points
+    };
+
+    //costs for edges
+    let costs = |_p0, p1| { 
+        if p1==end { 0 }
+        else { matrix.get(p1) } 
+    };
+  
+    //find the optimal path
+    lowest_cost_path(start, end, neighbors, costs).unwrap() 
+}
 
 fn lowest_cost_path<Node>(start: Node, end: Node, 
     neighbors: impl Fn(Node) -> Vec<Node>, 
     costs: impl Fn(Node, Node) -> usize 
 ) -> Option<usize> 
-where Node:Eq+std::hash::Hash+Copy+std::fmt::Debug
+where Node:Eq+std::hash::Hash+Copy
 {
     
     let mut node_cost: HashMap<Node, usize> = HashMap::new();
@@ -74,11 +152,9 @@ where Node:Eq+std::hash::Hash+Copy+std::fmt::Debug
         //pop a node from the search set
         let v = *search.iter().next().unwrap();
         search.remove(&v);
-        dbg!(v);
 
         //for each neighbor
         for u in neighbors(v) {
-            dbg!(u);
             //see if the neighbor can be more effieciently reached from this node's best path
             let cost = node_cost.get(&v).unwrap()+costs(v,u);
             if !node_cost.contains_key(&u) || cost < *node_cost.get(&u).unwrap() {
@@ -92,34 +168,6 @@ where Node:Eq+std::hash::Hash+Copy+std::fmt::Debug
     Some(*node_cost.get(&end).unwrap())
 }
 
-/*
-fn best_path_length(matrix: &Matrix<usize>, results:&mut Matrix<Option<usize>>, start:Point, end:Point) -> Option<usize> {
-    if !matrix.in_bounds(start) { return None; }
-
-    if let Some(best_len) = results.get(start) {
-        return Some(best_len);
-    }
-
-    println!("start: ({},{}), end: ({},{})", start.x, start.y, end.x, end.y);
-    
-    let this_val = matrix.get(start);
-
-    if start==end { return Some(this_val); }
-
-    let aval = best_path_length(matrix, results, start.neighbor(Dir::E), end);
-    let bval = best_path_length(matrix, results, start.neighbor(Dir::S), end);
-    
-    let best_len = match (aval, bval) {
-        (None, Some(val)) => Some(this_val+val),
-        (Some(val), None) => Some(this_val+val),
-        (Some(aval), Some(bval)) => Some(this_val+min(aval, bval)),
-        _ => None
-    };
-
-    results.put(start, best_len);
-    best_len
-}
-*/
 
 #[derive(Clone, Copy, PartialEq, Debug)]
 enum Dir {
@@ -149,6 +197,13 @@ impl Point {
             Dir::W => Point::new(self.x-1, self.y),
         }
     }
+}
+
+impl fmt::Display for Point {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.write_fmt(format_args!("({},{})", self.x, self.y))
+    }
+
 }
 
 //should maybe implement this with pointers, skipping the copy trait
