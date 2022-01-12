@@ -1,6 +1,8 @@
-use std::fmt;
-use std::cmp::min;
-use std::collections::{HashSet,HashMap};
+mod djikstra;
+
+use matrix::{Point, Dir, Matrix};
+use crate::djikstra::lowest_cost_path;
+
 #[test]
 fn solves() {
     assert_eq!(solve_81(), 427337);
@@ -9,8 +11,8 @@ fn solves() {
 }
 
 fn main() {
-//    println!("Solution 81: {}", solve_81());      
-//    println!("Solution 82: {}", solve_82());      
+    println!("Solution 81: {}", solve_81());      
+    println!("Solution 82: {}", solve_82());      
     println!("Solution 83: {}", solve_83());      
 }
 
@@ -26,14 +28,15 @@ fn solve_81() -> usize {
     //neighbors function for edges 
     let neighbors = |p: Point| { 
         let mut points: Vec<Point> = Vec::new();
-        //special handling for the end node
+        //special handling for the start and end node
         if p==Point::new((w-1) as isize,(h-1) as isize) {
             points.push(end);
         }
-        let pe = p.neighbor(Dir::E);
-        if matrix.in_bounds(pe) {points.push(pe);}
-        let ps = p.neighbor(Dir::S);
-        if matrix.in_bounds(ps) {points.push(ps);}
+        if p==start {
+            points.push(Point::new(0,0))
+        }
+        let neighbors = matrix.neighbors(p);
+        points.extend(neighbors.iter().filter(|(dir,_)| *dir==Dir::E || *dir==Dir::S).map(|(_,pn)| pn));
         points
     };
 
@@ -71,12 +74,8 @@ fn solve_82() -> usize {
         }
         //the rest of the node connect up, right, and down
         else {         
-            let dirs = [Dir::N, Dir::E, Dir::S];
-
-            for dir in dirs {
-                let pn = p.neighbor(dir);
-                if matrix.in_bounds(pn) { points.push(pn); }
-            }
+            let neighbors = matrix.neighbors(p);
+            points.extend(neighbors.iter().filter(|(dir,_)| *dir==Dir::E || *dir==Dir::S || *dir==Dir::N).map(|(_,pn)| pn));
         }
 
         points
@@ -114,13 +113,9 @@ fn solve_83() -> usize {
         }
         //the rest of the node connect up, right, down, and left
         else {         
-            let dirs = [Dir::N, Dir::E, Dir::S, Dir::W];
-
-            for dir in dirs {
-                let pn = p.neighbor(dir);
-                if matrix.in_bounds(pn) { points.push(pn); }
-            }
-        }
+            let neighbors = matrix.neighbors(p);
+            points.extend(neighbors.iter().map(|(_,pn)| pn));
+       }
 
         points
     };
@@ -133,121 +128,5 @@ fn solve_83() -> usize {
   
     //find the optimal path
     lowest_cost_path(start, end, neighbors, costs).unwrap() 
-}
-
-fn lowest_cost_path<Node>(start: Node, end: Node, 
-    neighbors: impl Fn(Node) -> Vec<Node>, 
-    costs: impl Fn(Node, Node) -> usize 
-) -> Option<usize> 
-where Node:Eq+std::hash::Hash+Copy
-{
-    
-    let mut node_cost: HashMap<Node, usize> = HashMap::new();
-    node_cost.insert(start, 0);
-    let mut search: HashSet<Node> = HashSet::new();
-    search.insert(start);
-
-    while !search.is_empty() {
-
-        //pop a node from the search set
-        let v = *search.iter().next().unwrap();
-        search.remove(&v);
-
-        //for each neighbor
-        for u in neighbors(v) {
-            //see if the neighbor can be more effieciently reached from this node's best path
-            let cost = node_cost.get(&v).unwrap()+costs(v,u);
-            if !node_cost.contains_key(&u) || cost < *node_cost.get(&u).unwrap() {
-                //if so, update the cost and add the neighbor to the search queue
-                node_cost.insert(u, cost);
-                search.insert(u);
-            }
-        }
-    }
-
-    Some(*node_cost.get(&end).unwrap())
-}
-
-
-#[derive(Clone, Copy, PartialEq, Debug)]
-enum Dir {
-    N, E, S, W
-}
-
-#[derive(Clone, Copy, PartialEq, Debug, Eq, Hash)]
-struct Point {
-    x: isize,
-    y: isize
-}
-
-struct Matrix <T> {
-    data: Vec<Vec<T>>
-} 
-
-impl Point {
-    fn new(x: isize, y:isize) -> Point {
-        Point{x,y}
-    }
-
-    fn neighbor(&self, dir:Dir) -> Point{
-        match dir {
-            Dir::N => Point::new(self.x, self.y-1),
-            Dir::E => Point::new(self.x+1, self.y),
-            Dir::S => Point::new(self.x, self.y+1),
-            Dir::W => Point::new(self.x-1, self.y),
-        }
-    }
-}
-
-impl fmt::Display for Point {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        f.write_fmt(format_args!("({},{})", self.x, self.y))
-    }
-
-}
-
-//should maybe implement this with pointers, skipping the copy trait
-impl <T: Copy> Matrix <T> {
-    fn new(w: usize, h:usize, initial:T) -> Matrix<T> {
-        Matrix{ data: vec![vec![initial;w];h] }
-    }
-
-    fn in_bounds(&self, p: Point) -> bool {
-        p.x>=0 && p.y>=0 && p.x<(self.data.len()) as isize && p.y<(self.data.len() as isize)
-    }
-
-    fn get(&self, p:Point) -> T {
-        if !self.in_bounds(p) { panic!("tried to access an out-of-bounds cell") }
-        
-        self.data[p.y as usize][p.x as usize]
-    }
-
-    fn put(&mut self, p:Point, val:T) {
-        if !self.in_bounds(p) {
-            panic!("attempt to insert into invalid index");
-        }
-
-        self.data[p.y as usize][p.x as usize] = val;
-    }
-
-    fn size(&self) -> (usize, usize) {
-        if self.data.is_empty() { (0, 0) }
-        else { (self.data[1].len(), self.data.len()) }
-    }
-
-
-    fn parse_usize(source: &str) -> Matrix<usize> {
-        Matrix{data: 
-            source.split('\n')
-            .filter(|line| !line.is_empty())
-            .map(|line| line
-                .split(',')
-                .map(|cell| cell
-                    .parse::<usize>()
-                    .unwrap()
-                ).collect()
-            ).collect()
-        }
-    }
 }
 
