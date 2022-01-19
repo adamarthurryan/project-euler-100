@@ -1,5 +1,3 @@
-use primal; 
-
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -57,7 +55,7 @@ fn diags(n:u64) -> [u64; 4] {
         corners[i] = lr - n*2*(3-i as u64);
     }
 
-    return corners;
+    corners
 }
 
 

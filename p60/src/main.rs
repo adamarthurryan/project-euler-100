@@ -6,8 +6,6 @@ represents the lowest sum for a set of four primes with this property.
 Find the lowest sum for a set of five primes for which any two primes concatenate 
 to produce another prime.*/
 
-//use primes;
-use primal;
 use std::collections::{HashMap, HashSet};
 
 #[cfg(test)]

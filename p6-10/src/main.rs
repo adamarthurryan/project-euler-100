@@ -22,7 +22,7 @@ fn main() {
 fn solve_6() -> usize {
     let sum_square = (1usize..=100).map(|n| n.pow(2)).sum::<usize>();
     let square_sum = (1..=100).sum::<usize>().pow(2);
-    return square_sum-sum_square;
+    square_sum-sum_square
 }
 
 fn solve_7() -> usize {
@@ -30,7 +30,7 @@ fn solve_7() -> usize {
 }
 
 fn solve_8() -> usize {
-    let num: Vec<usize> = P8_STRING.chars().filter(|&c| c>='0' && c<='9').map(|c| c.to_digit(10).unwrap() as usize).collect();
+    let num: Vec<usize> = P8_STRING.chars().filter(|&c| ('0'..='9').contains(&c)).map(|c| c.to_digit(10).unwrap() as usize).collect();
 
     //initialize with the first 13 elements
     let mut digits: Vec<usize> = num[0..13].to_vec();
@@ -43,7 +43,7 @@ fn solve_8() -> usize {
         digits.push(num[i]);
         max_prod = max(digits.iter().product(), max_prod);
     } 
-    return max_prod;
+    max_prod
 }
 fn solve_9() -> usize {
     //generate all 3-way partitions of 1000

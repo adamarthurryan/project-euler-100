@@ -42,8 +42,8 @@ mod tests {
     }
     #[test]
     fn reduce_works() {
-        assert_eq!(Fraction::new(2,4).is_reduced(),false);
-        assert_eq!(Fraction::new(1,4).is_reduced(),true);
+        assert!(!Fraction::new(2,4).is_reduced());
+        assert!(Fraction::new(1,4).is_reduced());
         assert_eq!(Fraction::new(2,4).reduce(),Fraction::new(1,2));
     }
     
@@ -56,7 +56,7 @@ pub fn gcf(a:usize, b:usize) -> usize {
         b = a % b;
         a = temp;
     }
-    return a;
+    a
 }
 
 
@@ -171,7 +171,7 @@ where F: Fn(Fraction) -> bool
     pub fn with_range(branch_test: F, lower: Fraction, upper: Fraction) -> SternBrocotFractions <F>{
         SternBrocotFractions{
             stack: vec![SternBrocotStackItem::Branch(lower, upper)], 
-            branch_test: branch_test
+            branch_test
         }
     }
 }
@@ -204,7 +204,7 @@ impl <F> Iterator for SternBrocotFractions <F>
             }
         }
         
-        return None;
+        None
     }
 }
 

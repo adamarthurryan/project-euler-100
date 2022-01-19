@@ -39,7 +39,7 @@ pub fn totient(sieve: &Sieve, n:usize) -> usize {
         phi *= (p.pow((k-1) as u32) as usize) * (p-1)
     }
 
-    return phi;
+    phi
 }
 
 pub struct TotientSieve {

@@ -36,6 +36,6 @@ fn solve() -> usize {
         }
     }
 
-    return the_n;
+    the_n
 }
 

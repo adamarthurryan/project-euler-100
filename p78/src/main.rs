@@ -5,8 +5,6 @@ Find the least value of n for which p(n) is divisible by one million.
 //use the Euler tranform, similar to p76, but with streamlined memo
 //this should use the pentagonal number expansion
 
-use memoize::memoize;
-
 #[test]
 fn p_mod_million_works() {
     //the correct digits of the sequence
@@ -58,10 +56,10 @@ fn solve() -> usize {
 fn p_mod_million(k:usize, n: usize, memo: &Vec<Vec<usize>>) ->  usize {
     //the result is correct for n+1... not for n...
     if k==1 { return 1; }
-    else if k<=0 || n<=0 { return 0; }
+    else if k==0 || n==0 { return 0; }
 
     let a = if n-k>=k {memo[n-k-1][k-1]} else {0};
     let b = if n>1 && k>1 {memo[n-1-1][k-1-1]} else {1};
 
-    return if a+b>1_000_000 {a+b-1_000_000} else {a+b};
+    if a+b>1_000_000 {a+b-1_000_000} else {a+b}
 }

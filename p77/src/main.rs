@@ -50,14 +50,14 @@ fn solve(m: usize) -> usize {
 
 #[memoize]
 fn b(n: usize) -> usize {
-    return (
+    (
         sopf(n) 
         + (1..(n-1)).map(|k| sopf(k)*b(n-k)).sum::<usize>()
-    )/n;
+    )/n
 }
 
 #[memoize]
 fn sopf(n: usize) -> usize {
     let sieve = SIEVE.get().unwrap();
-    return sieve.factor(n).unwrap().into_iter().map(|(p,_k)| p).sum();
+    sieve.factor(n).unwrap().into_iter().map(|(p,_k)| p).sum()
 }

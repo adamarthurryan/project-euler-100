@@ -37,7 +37,7 @@ fn solve (n:usize) -> usize {
     for k in 0..n {
         sum+=p(k as isize, n as isize);
     }
-    return sum;
+    sum
 }
 
 #[memoize]
@@ -45,5 +45,5 @@ fn p(k:isize, n: isize) ->  usize {
     if k==0 && n==0 { return 1; }
     else if k<=0 || n<=0 { return 0; }
 
-    return p(k, n-k) + p(k-1, n-1);
+    p(k, n-k) + p(k-1, n-1)
 }

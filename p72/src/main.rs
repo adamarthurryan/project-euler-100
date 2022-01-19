@@ -14,5 +14,5 @@ fn main() {
 
 fn solve(max_d: usize) -> usize {
     let sieve = TotientSieve::new(max_d);
-    return (2..=max_d).map(|d| sieve.totient(d)).sum();
+    (2..=max_d).map(|d| sieve.totient(d)).sum()
 }

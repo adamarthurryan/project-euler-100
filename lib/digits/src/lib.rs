@@ -161,10 +161,10 @@ fn to_digits(n: usize) -> Vec<usize> {
     let mut n = n;
     while n>0 {
         a.push(n%10);
-        n = n/10;
+        n /= 10;
     }
 
-    return a;
+    a
 }
 
 //returns the number represented by the given digits in base 10
@@ -174,7 +174,7 @@ fn from_digits(digits:&[usize]) -> usize {
         n = n*10 + d;
     }
 
-    return n;
+    n
 }
 
 //simple digit-wise addition
@@ -194,7 +194,7 @@ fn digits_add(a: &[usize], b: &[usize]) -> Vec<usize> {
         rem = 0;
         if c >= 10 {
             rem = 1;
-            c = c - 10;
+            c -= 10;
         }
 
         sum.push(c);
@@ -206,7 +206,7 @@ fn digits_add(a: &[usize], b: &[usize]) -> Vec<usize> {
         rem = 0;
         if c >= 10 {
             rem = 1;
-            c = c - 10;
+            c -= 10;
         }
 
         sum.push(c);
@@ -217,7 +217,7 @@ fn digits_add(a: &[usize], b: &[usize]) -> Vec<usize> {
         sum.push(rem);
     }
 
-    return sum;
+    sum
 }
 
 //katasuba-ish multiplication
@@ -265,7 +265,7 @@ fn digits_mul(a: &[usize], b: &[usize]) -> Vec<usize> {
     z1.splice(0..0, vec![0; m]);
 
     //combine zi into a single number
-    return digits_add(&z2, &digits_add(&z1, &z0));
+    digits_add(&z2, &digits_add(&z1, &z0))
 }
 
 pub fn digit_length(n:usize) -> usize {
@@ -277,8 +277,8 @@ pub fn digit_freq(n:usize) -> [usize;10] {
     let mut n = n;
     while n>0 {
         freq[n%10] += 1;
-        n = n/10;
+        n /= 10;
     }
 
-    return freq;
+    freq
 }

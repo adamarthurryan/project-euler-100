@@ -42,6 +42,6 @@ fn solve(search: Fraction, max_d: usize) -> usize {
     let diffs = fracs.filter(|q| q!=&search);
     let q = diffs.max_by(|q0,q1| q0.cmp(q1)).unwrap();
     
-    return q.n;   
+    q.n
 }
 

@@ -33,7 +33,7 @@ fn main() {
 //generate all triples with a+b+c <= L
   //use sb tree to generate coprime pairs of m,n, then iterate on k
 //tabulate the length of each one
-//find entries with length = 1
+//find lengths with only a single entry
 fn solve(l: usize) -> usize {
     //map each length a+b+c to the number of pythagorean triples that have it
     let mut length_counts: HashMap <usize, usize> = HashMap::new();

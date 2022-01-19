@@ -43,10 +43,10 @@ fn solve() -> Option<usize> {
     match result {
         Some(cycle) => {
             println!("cycle: {:?}", cycle);
-            return Some(cycle.into_iter().map(|(_part, num)| num).sum());
+            Some(cycle.into_iter().map(|(_part, num)| num).sum())
         }
         None => {
-            return None;
+            None
         }
     }
 }
@@ -60,7 +60,7 @@ fn is_edge(a:usize, b:usize) -> bool {
 //find a cycle that touches each partition fo the graph at least once
 //edges are defined by the is_edge function in this namespace
 fn find_cycle(nums: &[Vec<usize>]) -> Option<Vec<(usize, usize)>> {
-    find_cycle_inner(nums, 0, 0, &Vec::new(), &vec![false; 6])
+    find_cycle_inner(nums, 0, 0, &Vec::new(), &[false; 6])
 }
 
 fn find_cycle_inner(nums:  &[Vec<usize>], part: usize, step: usize, path: &[(usize, usize)], visited: &[bool]) -> Option<Vec<(usize, usize)>> {
