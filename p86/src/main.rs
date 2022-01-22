@@ -38,19 +38,19 @@ fn main() {
 
 //binary search for the solution
 //(since there isn't an easy way to calculate cuboid(M) incrementally)
-fn solve(M:usize) -> usize {
+fn solve(max_length:usize) -> usize {
     let mut i=1;
     let mut step= 1000;
     loop {
         let val = cuboids(i);
-        if val>=M && step==1 {
+        if val>=max_length && step==1 {
             return i;
         }
 
-        if val<M {
+        if val<max_length {
             i+=step;
         }
-        if val>M {
+        if val>max_length {
             i-=step;
             step /= 2;
         }
@@ -63,9 +63,9 @@ fn sb_mediant_a(mediant: Fraction) -> usize {
 fn sb_mediant_b(mediant: Fraction) -> usize {
     mediant.n*mediant.d
 }
-fn sb_mediant_c(mediant: Fraction) -> usize {
-    (mediant.d.pow(2)+mediant.n.pow(2))/2
-}
+//fn sb_mediant_c(mediant: Fraction) -> usize {
+//    (mediant.d.pow(2)+mediant.n.pow(2))/2
+//}
 
 /*
 euclid's formula for generating pythagorean triples: a^2 + b^2 = c^2
@@ -74,33 +74,32 @@ for m, n, k positive integers with m, n coprime and both odd
 generate all triples with a,b,c < M  and a > b
 use sb tree to generate coprime pairs of m,n, then iterate on k
 */
-fn cuboids(M: usize) -> usize {
+fn cuboids(max_length: usize) -> usize {
     //set up the generator of coprime m,n
-    let branch_test = move |mediant: Fraction| sb_mediant_a(mediant) <= 2*M && sb_mediant_b(mediant) <= 2*M;
+    let branch_test = move |mediant: Fraction| sb_mediant_a(mediant) <= 2*max_length && sb_mediant_b(mediant) <= 2*max_length;
     let fractions = SternBrocotFractions::new(branch_test);
 
     //only consider odd m,n
     let fractions = fractions.filter(|frac| frac.n % 2 == 1 && frac.d % 2 == 1);
-
 
     //for each emitted fraction, count the number of rectangular solids that can be generated from it
     let mut count = 0;
     for frac in fractions {
         
         //generate the primitive pythagorean triple from m,n
-        let (a,b,c) = (sb_mediant_a(frac), sb_mediant_b(frac), sb_mediant_c(frac));
+        let (a,b) = (sb_mediant_a(frac), sb_mediant_b(frac));
 
         //iterate on multiples of the triple
         let mut k = 1;
-        while (k*a <= M && k*b <= 2*k*a) || (k*a <= 2*k*b && k*b <= M)   {
+        while (k*a <= max_length && k*b <= 2*k*a) || (k*a <= 2*k*b && k*b <= max_length)   {
             //add all possible rectangular solids
         
             // some careful counting...
-            if k*a <= M && k*b <= 2*k*a {
-                count += count_em(k*a,k*b,M);
+            if k*a <= max_length && k*b <= 2*k*a {
+                count += count_em(k*a,k*b,max_length);
             }
-            if k*b <= M && k*a <= 2*k*b {
-                count += count_em(k*b,k*a,M);
+            if k*b <= max_length && k*a <= 2*k*b {
+                count += count_em(k*b,k*a,max_length);
             }
 
             k += 1;
@@ -109,14 +108,14 @@ fn cuboids(M: usize) -> usize {
     count
 }
 
-fn count_em(a: usize, b:usize, M:usize) -> usize {
-    if !(a<=M && b <=2*a) {
+fn count_em(a: usize, b:usize, max_length:usize) -> usize {
+    if !(a<=max_length && b <=2*a) {
         return 0;
     }
 
-    let low = max(1, max((b) as isize - (a) as isize, (b) as isize - M as isize) ) as usize;
-    let high = min(M+1,min(a + 1, b));
-    if (low<high) {
+    let low = max(1, max((b) as isize - (a) as isize, (b) as isize - max_length as isize) ) as usize;
+    let high = min(max_length+1,min(a + 1, b));
+    if low<high {
         (high-low+1)/2
     }
     else {

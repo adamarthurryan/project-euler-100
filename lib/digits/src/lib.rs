@@ -85,10 +85,6 @@ impl Digits {
         from_digits(&self.digits)
     }
 
-    pub fn to_string(&self) -> String {
-        self.digits.iter().rev().fold(String::new(), |a, b| a + &b.to_string())
-    }
-
     pub fn digits(&self) -> &Vec<usize> {
         &self.digits
     }

@@ -20,9 +20,7 @@ fn solve() -> usize {
             
             .map(|e: usize| (e, Digits::new(n).pow(e)))
             .take_while(|(e,x)| x.len() == *e)
-            .map(|(e,x)| (e,x.to_string()))
-            .collect::<Vec<_>>()
-            .len()
+            .count()
         ).sum()
 }
 

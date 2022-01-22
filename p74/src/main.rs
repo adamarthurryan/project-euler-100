@@ -39,7 +39,7 @@ Memoization of chain lengths seems like the preferred solution in the forums.
 */
 fn solve() -> usize {
     //cache the factorials from 0 through 9
-    let factorials: Vec<usize> = (0..=9).map(|n| factorial(n)).collect();
+    let factorials: Vec<usize> = (0..=9).map(factorial).collect();
     println!("Buckle up, this is a slow one.");
     let mut count = 0;
     for n in 1..1_000_000 {
@@ -50,10 +50,10 @@ fn solve() -> usize {
             count += 1;
         }
     }
-    return count;
+    count
 }
 
-fn count_steps(n: usize, factorials: &Vec<usize>,  hits: &mut HashSet<usize>, memo: &mut HashMap<usize,usize>) -> usize {
+fn count_steps(n: usize, factorials: &[usize],  hits: &mut HashSet<usize>, memo: &mut HashMap<usize,usize>) -> usize {
     if let Some(&count) = memo.get(&n) {
         return count;
     }
@@ -65,7 +65,7 @@ fn count_steps(n: usize, factorials: &Vec<usize>,  hits: &mut HashSet<usize>, me
 
 
     let digits = Digits::new(n);
-    let n_prime = digits.digits().into_iter().map(|&d| factorials[d]).sum();
+    let n_prime = digits.digits().iter().map(|&d| factorials[d]).sum();
     let count = 1 + count_steps(n_prime, factorials, hits, memo);
     memo.insert(n,count);
     return count;

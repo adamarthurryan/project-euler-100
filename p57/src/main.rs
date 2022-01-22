@@ -38,7 +38,7 @@ fn solve (n:usize) -> usize {
         }
     }
 
-    return count;
+    count
 }
 
 //calculates the ith convergent of the continued fraction with the current ai coefficient given

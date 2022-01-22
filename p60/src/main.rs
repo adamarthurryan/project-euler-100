@@ -6,7 +6,7 @@ represents the lowest sum for a set of four primes with this property.
 Find the lowest sum for a set of five primes for which any two primes concatenate 
 to produce another prime.*/
 
-use std::collections::{HashMap, HashSet};
+use std::collections::{HashSet};
 
 #[cfg(test)]
 mod tests {
@@ -38,7 +38,7 @@ fn solve () -> Option<u64> {
     let primes: Vec<u64> = sieve.primes_from(3).take_while(|&p| p<10_000).map(|p| p as u64).collect();
 
     //find all pairs of primes
-    let pairs: Vec<_> = Pairs::new(&primes).collect();
+    let pairs = Pairs::new(&primes);
 
 
     //filter for both composites are prime
@@ -60,7 +60,7 @@ fn solve () -> Option<u64> {
     }
 
     let mut vertices: Vec<u64> = vertices.into_iter().collect();
-    vertices.sort();
+    vertices.sort_unstable();
 
 //    //drop any vertices that don't have at least 5 neighbors
 //    vertices = vertices.into_iter().filter(|v| neighbors.get(&v).unwrap().len()>=5).collect();
@@ -77,11 +77,11 @@ fn solve () -> Option<u64> {
     match clique {
         Some(clique) => {
             println!("5-clique found: {:?}", clique);
-            return Some(clique.into_iter().sum());    
+            Some(clique.into_iter().sum())  
         }
         _ => {
             println!("no 5-clique found");
-            return None;
+            None
         }
     }
 
@@ -91,21 +91,21 @@ fn solve () -> Option<u64> {
 
 //this could maybe run better without hashsets
 //eg sorted iterators or something?
-fn find_k_clique(k: usize, vertices: &Vec<u64>, neighbors: &HashSet<(u64, u64)>) -> Option<Vec<u64>> {
+fn find_k_clique(k: usize, vertices: &[u64], neighbors: &HashSet<(u64, u64)>) -> Option<Vec<u64>> {
     k_clique_inner(k, 0, &Vec::new(), vertices, neighbors)
 }
 
 //another try for a k-clique algorithm
 //maybe more efficient
 //this should start from pairs, not just individual items, right?
-fn k_clique_inner(k:usize, pivot:usize, clique: &Vec<u64>, vertices: &Vec<u64>, neighbors: &HashSet<(u64, u64)> ) -> Option<Vec<u64>> {
+fn k_clique_inner(k:usize, pivot:usize, clique: &[u64], vertices: &[u64], neighbors: &HashSet<(u64, u64)> ) -> Option<Vec<u64>> {
     let mut pivot = pivot;
 
     for v in &vertices[pivot..] {
         pivot += 1;
         //if this vertex is in the clique
         if clique.iter().all(|u| neighbors.contains(&(*u,*v))) {
-            let mut new_clique = clique.clone();
+            let mut new_clique = clique.to_vec();
             new_clique.push(*v);
 
             if new_clique.len() == k {
@@ -118,19 +118,19 @@ fn k_clique_inner(k:usize, pivot:usize, clique: &Vec<u64>, vertices: &Vec<u64>, 
         }
     }
 
-    return None;
+    None
 }
 
+/*
 fn bron_kerbosch(r: &HashSet<u64>, p: &mut HashSet<u64>, x: &mut HashSet<u64>, neighbors: &mut HashMap<u64, Vec<u64>>) -> Vec<Vec<u64>> {
-    /* from Wikipedia:
-    algorithm BronKerbosch1(R, P, X) is
-        if P and X are both empty then
-            report R as a maximal clique
-        for each vertex v in P do
-            BronKerbosch1(R ⋃ {v}, P ⋂ N(v), X ⋂ N(v))
-            P := P \ {v}
-            X := X ⋃ {v}
-    */
+    // from Wikipedia:
+    // algorithm BronKerbosch1(R, P, X) is
+    // if P and X are both empty then
+    // report R as a maximal clique
+    // for each vertex v in P do
+    // BronKerbosch1(R ⋃ {v}, P ⋂ N(v), X ⋂ N(v))
+    // P := P \ {v}
+    // X := X ⋃ {v}
 
     //if P and X are both empty then
     //    report R as a maximal clique 
@@ -162,11 +162,12 @@ fn bron_kerbosch(r: &HashSet<u64>, p: &mut HashSet<u64>, x: &mut HashSet<u64>, n
 
     //unimplemented!();
 }
+*/
 
 //concatenate the digits of b after the digits of a
 fn concatenate(a:u64, b:u64) -> u64 {
     let exp = (b as f64).log10().ceil() as u32;
-    return a*10u64.pow(exp)+b;
+    a*10u64.pow(exp)+b
 }
 
 struct Pairs <'a, T> {
@@ -176,7 +177,7 @@ struct Pairs <'a, T> {
 
 impl <'a, T> Pairs <'a, T> {
     fn new(source:&[T]) -> Pairs <T> {
-        return Pairs{next:(0,1), source};
+        Pairs{next:(0,1), source}
     }
 }
 
@@ -195,6 +196,6 @@ impl <'a, T> Iterator for Pairs <'a, T> {
             self.next.1 = self.next.0 + 1;
         }
 
-        return Some(item);
+        Some(item)
     }
 }

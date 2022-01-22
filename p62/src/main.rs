@@ -32,7 +32,7 @@ fn main() {
 fn solve(count: usize) -> Option<usize> {
     
     //the list of cubic numbers
-    let cubes = (1..).map(|n: usize| n.pow(3)).map(|n| Digits::new(n));
+    let cubes = (1..).map(|n: usize| n.pow(3)).map(Digits::new);
     //grouped by number of digits
     let cubes_by_len = cubes.group_by(|n_digits| n_digits.len());
     
@@ -63,6 +63,6 @@ fn solve(count: usize) -> Option<usize> {
     }
 
 
-    return None;
+    None
 
 }

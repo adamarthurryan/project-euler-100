@@ -53,7 +53,7 @@ fn solve() -> usize {
     unreachable!();
 }
 
-fn p_mod_million(k:usize, n: usize, memo: &Vec<Vec<usize>>) ->  usize {
+fn p_mod_million(k:usize, n: usize, memo: &[Vec<usize>]) ->  usize {
     //the result is correct for n+1... not for n...
     if k==1 { return 1; }
     else if k==0 || n==0 { return 0; }

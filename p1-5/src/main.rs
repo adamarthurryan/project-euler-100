@@ -47,14 +47,14 @@ impl Iterator for FibIterator {
         let next = self.x0 + self.x1;
         self.x0 = self.x1;
         self.x1 = next;
-        return Some(val);
+        Some(val)
     }
 }
 
 fn solve_3() -> usize {
     let sieve = Sieve::new(1_000_000);
     let factors = sieve.factor(600851475143).unwrap();
-    return factors.into_iter().map(|(p, _k)| p).max().unwrap();
+    factors.into_iter().map(|(p, _k)| p).max().unwrap()
 }
 
 /*A palindromic number reads the same both ways. The largest palindrome made from the product of two 2-digit numbers is 9009 = 91 × 99.
@@ -69,7 +69,7 @@ fn solve_4() -> usize {
         }
     }
 
-    return palindromes.into_iter().max().unwrap();
+    palindromes.into_iter().max().unwrap()
 }
 /*2520 is the smallest number that can be divided by each of the numbers from 1 to 10 without any remainder.
 What is the smallest positive number that is evenly divisible by all of the numbers from 1 to 20?*/

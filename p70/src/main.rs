@@ -15,8 +15,8 @@ fn solves() {
 }
 #[test]
 fn is_permutation_works() {
-    assert_eq!(is_permutation(87109, 79180), true);
-    assert_eq!(is_permutation(87108, 79180), false);
+    assert!(is_permutation(87109, 79180));
+    assert!(!is_permutation(87108, 79180));
 }
 
 
@@ -45,7 +45,7 @@ fn solve() -> usize {
         }
     }
 
-    return the_n;
+    the_n
 }
 
 /*

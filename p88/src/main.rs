@@ -20,7 +20,7 @@ What is the sum of all the minimal product-sum numbers for 2≤k≤12000?
 
 
 use primal::Sieve;
-use std::{collections::HashMap, ops::RangeBounds};
+use std::{collections::HashMap};
 fn main() {
 
     //k->n gives the minimum n st. n is a product-sum number of k 
