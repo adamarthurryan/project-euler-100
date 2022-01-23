@@ -1,4 +1,5 @@
-/*Consider the fraction, n/d, where n and d are positive integers. If n<d and HCF(n,d)=1, it is called a reduced proper fraction.
+/*Consider the fraction, n/d, where n and d are positive integers. If n<d and HCF(n,d)=1, 
+it is called a reduced proper fraction.
 
 If we list the set of reduced proper fractions for d ≤ 8 in ascending order of size, we get:
 
@@ -6,7 +7,8 @@ If we list the set of reduced proper fractions for d ≤ 8 in ascending order of
 
 It can be seen that 2/5 is the fraction immediately to the left of 3/7.
 
-By listing the set of reduced proper fractions for d ≤ 1,000,000 in ascending order of size, find the numerator of the fraction immediately to the left of 3/7.
+By listing the set of reduced proper fractions for d ≤ 1,000,000 in ascending order of size, 
+find the numerator of the fraction immediately to the left of 3/7.
 */
 
 use fractions::Fraction;
@@ -36,7 +38,7 @@ fn solve(search: Fraction, max_d: usize) -> usize {
     //the cell closest to the line is most adjacent...
 
 
-    //this could be more elegant and accurate by not using a slope but instead just 
+    //this could be more elegant and accurate by not using a slope but instead just ...
     let slope: f64 = search.into();
     let fracs = (2..=max_d).map(|di| Fraction::from_f64(slope, di)).filter(|q| q.is_reduced());
     let diffs = fracs.filter(|q| q!=&search);

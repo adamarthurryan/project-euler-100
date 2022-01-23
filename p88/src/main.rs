@@ -20,54 +20,101 @@ What is the sum of all the minimal product-sum numbers for 2≤k≤12000?
 
 
 use primal::Sieve;
-use std::{collections::HashMap};
+use std::collections::HashMap;
+
+#[test]
+fn solves() {
+    assert_eq!(solve(12), 61);
+    assert_eq!(solve(12000), 7587457);
+}
+
 fn main() {
+    println!("Solution: {}", solve(12000));
+    todo!("refactor PrimeFactorsIterator and maybe FactorsIterator into a library crate");
+
+}
+
+
+
+fn solve(limit:usize) -> usize {
 
     //k->n gives the minimum n st. n is a product-sum number of k 
     let mut big_k: HashMap<usize, usize> = HashMap::new();
 
-    let iter = PrimeFactorsIterator::new(100);
-    let primes = iter.primes();
-    println!("primes: {:?}", primes);
+    let iter = FactorsIterator::new(limit*2).filter(|(_,_, count)| *count>1);
 
-    for k in iter {
+    for (n, sum, count) in iter {
 
-        let n = product_prime_factors(&k, &primes);
-        let sum = sum_prime_factors(&k, &primes);
-        let non_zero_k = k.iter().filter(|&&ki| ki>0);
-        let size = n-sum + non_zero_k.count();
-        println!("n: {}, sum: {}, size: {}, {:?}", n, sum, size, k);
+        let size = n - sum + count;
 
-        if big_k.contains_key(&size) && *big_k.get(&size).unwrap() > n {
+        if (!big_k.contains_key(&size) || *big_k.get(&size).unwrap() > n) && size <= limit {
             big_k.insert(size, n);
         }
     }
 
-    println!("{:?}", big_k);
-
+    let mut big_k = big_k.into_iter().collect::<Vec<_>>();
+    let mut nums = big_k.into_iter().map(|(_,n)| n).collect::<Vec<_>>();
+    nums.sort();
+    nums.dedup();
+    nums.into_iter().sum::<usize>()
 }
 
-fn product_prime_factors(k: &[usize], primes: &[usize]) -> usize {
-    let mut n = 1;
-    for i in 0..k.len() {
-        n *= primes[i].pow(k[i] as u32);
+struct FactorsIterator {
+    limit: usize,
+    curr: Vec<usize>,
+    prod: usize,
+    sum: usize,
+    count: usize,
+    finished: bool
+}
+
+impl FactorsIterator {
+    fn new(limit: usize) -> Self {
+        let curr = vec![0;3*isqrt(limit)];
+        FactorsIterator{limit, curr, prod:1, sum:0, count:0, finished:false}
     }
-
-    n
 }
 
-fn sum_prime_factors(k: &[usize], primes: &[usize]) -> usize {
-    let mut n = 0;
-    for i in 0..k.len() {
-        if k[i] > 0 {
-            n += primes[i].pow(k[i] as u32);
+impl Iterator for FactorsIterator {
+    //product, sum, count
+    type Item = (usize,usize,usize);
+    
+    fn next(&mut self) -> Option<Self::Item> {
+        if self.finished { return None; }
+
+        self.prod *= 2;
+        self.sum += 2;
+        self.count += 1;
+
+        self.curr[0] += 1;
+
+
+        let mut j = 0;
+        while self.prod > self.limit 
+        {    
+            self.prod /= (j+2usize).pow(self.curr[j] as u32);
+            self.sum -= (j+2)*self.curr[j];
+            self.count -= self.curr[j]; 
+
+            self.curr[j] = 0;
+            j += 1;
+            if j >= self.curr.len() {
+                self.finished = true;
+                return None;
+            }
+
+            self.prod *= j+2;
+            self.sum += j+2;
+            self.count += 1;
+            self.curr[j] += 1;
         }
-    }
 
-    n
+        Some((self.prod, self.sum, self.count))
+    }
 }
 
-
+///////////
+ 
 struct PrimeFactorsIterator {
     limit: usize,
     curr: Vec<usize>,
@@ -114,6 +161,26 @@ impl Iterator for PrimeFactorsIterator {
     }
 }
 
+
+fn product_prime_factors(k: &[usize], primes: &[usize]) -> usize {
+    let mut n = 1;
+    for i in 0..k.len() {
+        n *= primes[i].pow(k[i] as u32);
+    }
+
+    n
+}
+
+fn sum_prime_factors(k: &[usize], primes: &[usize]) -> usize {
+    let mut n = 0;
+    for i in 0..k.len() {
+        if k[i] > 0 {
+            n += primes[i].pow(k[i] as u32);
+        }
+    }
+
+    n
+}
 
 fn isqrt(n: usize) -> usize {
     (n as f64).sqrt() as usize

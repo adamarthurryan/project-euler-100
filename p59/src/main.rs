@@ -1,11 +1,14 @@
 use itertools::Itertools;
 use regex::Regex;
 
+#[test]
+fn solves() {
+    assert_eq!(solve(),129448);
+}
+
 fn main() {
     println!("Solution: {}", solve());
 }
-
-
 
 fn solve() -> usize {
     let words = Regex::new(r" and | the | for | but ").unwrap();
@@ -29,26 +32,11 @@ fn solve() -> usize {
     panic!("No solution found");
 }
 
-fn index_of_confidence(str: &str) -> f64 {
-    let mut histogram = [0;26];
-    for c in str.chars() {
-        histogram[c as usize - 97] += 1;
-    }
-
-    let len = str.len() as f64;
-    let mut ic = 0.0;
-    for h in histogram {
-        let h = h as f64;
-        ic += h/len*(h-1.0)/(len-1.0);
-    }
-
-    ic * 26.0
-}
 
 fn condition(str: &str) -> String {
     str.to_lowercase().chars()
         .map(|c| if c=='.' || c==',' || c=='?' || c=='!' || c==':' || c==';' { ' ' } else { c })
-        .filter(|&c| ('a'<=c && c<='z') || c==' ')
+        .filter(|&c| ('a'..='z').contains(&c) || c==' ')
         .collect::<String>()
 }
 
