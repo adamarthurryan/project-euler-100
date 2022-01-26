@@ -52,9 +52,8 @@ fn solve(limit:usize) -> usize {
         }
     }
 
-    let mut big_k = big_k.into_iter().collect::<Vec<_>>();
     let mut nums = big_k.into_iter().map(|(_,n)| n).collect::<Vec<_>>();
-    nums.sort();
+    nums.sort_unstable();
     nums.dedup();
     nums.into_iter().sum::<usize>()
 }
