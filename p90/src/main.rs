@@ -18,6 +18,12 @@ Something about edge covers?
 
 How many complete bipartite graphs K6,6 can be formed st each edge in the graph is included at least once? 
 
+Algorithm:
+
+- consider all orientations of the edges in the above graph
+- for each orientation, gather the set of in-vertex labels and out-vertex labels and place them on die a and die b respectively
+- then count the 
+
 */
 
 use std::{fmt, ops::RangeBounds};
@@ -86,12 +92,23 @@ fn num_possible(pair: &DicePair) -> usize {
         //note that not 6 also implies not 9
         count *= match 5-digits.len() {
             0 => 1,
-            1 => 4,
-            2 => 12,
-            _ => 24
+            1 => 3,
+            2 => 6,
+            _ => 6
         };
         //count the number of ways 9 can be substituted for 6
         count *= if digits.contains(&6) {2} else {1};
+
+        // this isn't accounting for the possibility that the a die could have both 6 and 9...
+        if digits.contains(&6) {
+            count += match 5-digits.len() {
+                0 => 0,
+                1 => 1,
+                2 => 3,
+                3 => 6,
+                _ => 6
+            }
+        }
         
     }
     //count placement of 2-5 pair
